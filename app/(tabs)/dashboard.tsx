@@ -1,9 +1,15 @@
-import { Text, View } from "react-native";
-
+import Features from "@/components/Features";
+import Hero from "@/components/Hero";
+import Navbar from "@/components/Navbar";
+import HowItWorks from "@/components/HowItWorks";
+import { ScrollView } from "react-native";
 export default function Dashboard() {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Dashboard Screen</Text>
-    </View>
+    <ScrollView>
+      <Navbar />
+      <Hero />
+      <Features />
+      <HowItWorks />
+    </ScrollView>
   );
 }
