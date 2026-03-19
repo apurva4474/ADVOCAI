@@ -223,24 +223,43 @@ ${message}
     res.status(500).json({ error: error.message });
   }
 });
+
 app.post("/summarize", async (req, res) => {
   try {
 
     const { title, content } = req.body;
 
-    const summary = content.slice(0, 120) + "...";
+    if (!content) {
+      return res.status(400).json({ error: "No content provided" });
+    }
+
+    const aiResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `
+Summarize this legal case clearly and concisely.
+
+${content}
+`
+        }
+      ],
+      model: "llama-3.3-70b-versatile"
+    });
+
+    const result = aiResponse.choices[0].message.content;
 
     const newDoc = new Document({
       title,
       content,
-      summary
+      summary: result
     });
 
     await newDoc.save();
 
     res.json({
-      message: "Document summarized",
-      summary
+      message: "AI summary generated",
+      summary: result
     });
 
   } catch (error) {
