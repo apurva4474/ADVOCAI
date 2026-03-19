@@ -1,9 +1,14 @@
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+
+import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 const isMobile = width < 768;
 
 export default function Features() {
+
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
 
@@ -11,37 +16,53 @@ export default function Features() {
 
       <View style={[styles.cardContainer, isMobile && styles.mobileCards]}>
 
-        <View style={styles.card}>
+        {/* Summarizer */}
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push("/summarizer")}
+        >
           <Text style={styles.icon}>📄</Text>
           <Text style={styles.title}>Document Summariser</Text>
           <Text style={styles.text}>
             Upload PDFs or images of case files and get instant AI summaries.
           </Text>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        {/* Argument Generator */}
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push("/argument")}
+        >
           <Text style={styles.icon}>⚖️</Text>
           <Text style={styles.title}>Argument Generator</Text>
           <Text style={styles.text}>
             Generate strong legal arguments automatically from case facts.
           </Text>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        {/* Timeline */}
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push("/calendar")}
+        >
           <Text style={styles.icon}>📅</Text>
           <Text style={styles.title}>Timeline Builder</Text>
           <Text style={styles.text}>
             Organize case events into a clear chronological timeline.
           </Text>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.card}>
+        {/* Research */}
+        <TouchableOpacity 
+          style={styles.card}
+          onPress={() => router.push("/cases")}
+        >
           <Text style={styles.icon}>🔎</Text>
           <Text style={styles.title}>Legal Research</Text>
           <Text style={styles.text}>
             Extract insights from long legal documents instantly.
           </Text>
-        </View>
+        </TouchableOpacity>
 
       </View>
 
@@ -54,7 +75,6 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 80,
     paddingHorizontal: 40,
-   
     alignItems: "center",
   },
 
@@ -107,3 +127,4 @@ const styles = StyleSheet.create({
   },
 
 });
+

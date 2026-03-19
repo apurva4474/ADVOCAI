@@ -1,6 +1,9 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function Navbar() {
+
+ const router = useRouter();
   return (
     <View style={styles.navbar}>
 
@@ -8,12 +11,17 @@ export default function Navbar() {
       <Text style={styles.logo}>ADVOC-AI</Text>
 
       {/* CENTER */}
-      <View style={styles.menu}>
-        <Text style={styles.link}>Home</Text>
-        <Text style={styles.link}>Summariser</Text>
-        <Text style={styles.link}>Argument Generator</Text>
-        <Text style={styles.link}>Contact Us</Text>
-      </View>
+      <TouchableOpacity onPress={()=>router.push("/dashboard")}style={{flexDirection:"row", justifyContent:"space-between"}}>
+       <Text>Home</Text>
+     </TouchableOpacity>
+
+     <TouchableOpacity onPress={()=>router.push("/summarizer")}style={{flexDirection:"row", justifyContent:"space-between"}}>
+       <Text>Summarizer</Text>
+     </TouchableOpacity>
+
+     <TouchableOpacity onPress={()=>router.push("/argument")}style={{flexDirection:"row", justifyContent:"space-between"}}>
+       <Text>Argument</Text>
+     </TouchableOpacity>
 
       {/* RIGHT */}
       <View style={styles.auth}>
