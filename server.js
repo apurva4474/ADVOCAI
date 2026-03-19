@@ -68,33 +68,58 @@ app.post("/create-case", async (req, res) => {
 app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
   try {
 
+    console.log("FILE RECEIVED:", req.file);
+
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
     const caseId = req.params.caseId;
 
-    const dataBuffer = fs.readFileSync(req.file.path);
-    const pdfData = await pdfParse(dataBuffer);
+    // 🔥 Step 1: Read file
+    let dataBuffer;
+    try {
+      dataBuffer = fs.readFileSync(req.file.path);
+      console.log("File read success");
+    } catch (err) {
+      console.log("FILE READ ERROR:", err);
+      return res.status(500).json({ error: "File read failed" });
+    }
+
+    // 🔥 Step 2: Parse PDF
+    let pdfData;
+    try {
+      pdfData = await pdfParse(dataBuffer);
+      console.log("PDF parsed");
+    } catch (err) {
+      console.log("PDF PARSE ERROR:", err);
+      return res.status(500).json({ error: "PDF parsing failed" });
+    }
 
     const text = pdfData.text.replace(/\s+/g, " ").slice(0, 8000);
 
-    const aiResponse = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: `
-Summarize this legal document and list key arguments.
+    // 🔥 Step 3: AI
+    let result;
+    try {
+      const aiResponse = await groq.chat.completions.create({
+        messages: [
+          {
+            role: "user",
+            content: `Summarize this legal document:\n${text}`
+          }
+        ],
+        model: "llama-3.3-70b-versatile"
+      });
 
-${text}
-`
-        }
-      ],
-      model: "llama-3.3-70b-versatile"
-    });
+      result = aiResponse.choices[0].message.content;
+      console.log("AI success");
 
-    const result = aiResponse.choices[0].message.content;
+    } catch (err) {
+      console.log("AI ERROR:", err);
+      return res.status(500).json({ error: "AI failed" });
+    }
 
+    // 🔥 Step 4: Save
     const newSummary = new Summary({
       caseId,
       filename: req.file.originalname,
@@ -104,11 +129,12 @@ ${text}
     await newSummary.save();
 
     res.json({
-      message: "Document uploaded and analyzed",
+      message: "Success",
       summary: result
     });
 
   } catch (error) {
+    console.log("FINAL ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
