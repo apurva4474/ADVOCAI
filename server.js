@@ -117,7 +117,6 @@ app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
     const result = aiResponse.choices[0].message.content;
 
     const newSummary = new Summary({
-      caseId: req.params.caseId,
       filename: req.file.originalname,
       summary: result,
     });
