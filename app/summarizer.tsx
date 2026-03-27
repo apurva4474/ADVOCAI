@@ -3,6 +3,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -19,16 +20,27 @@ export default function Summarizer() {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState("");
-const [file, setFile] = useState<any>(null);
-  // 📄 File Picker
+  const [file, setFile] = useState<any>(null);
+
+  // 📄 File Picker (FIXED FOR WEB)
   const pickFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
     });
 
     if (result.assets && result.assets.length > 0) {
-      setFileName(result.assets[0].name);
-      setFile(result.assets[0]); 
+      const asset = result.assets[0];
+
+      // 🔥 convert to real File (important for web)
+      const response = await fetch(asset.uri);
+      const blob = await response.blob();
+
+      const fileObj = new File([blob], asset.name, {
+        type: "application/pdf",
+      });
+
+      setFile(fileObj);
+      setFileName(asset.name);
     }
   };
 
@@ -74,57 +86,45 @@ const [file, setFile] = useState<any>(null);
     }
 
     // FILE MODE
+    if (mode === "file") {
 
- // FILE MODE
-if (mode === "file") {
+      if (!file) {
+        alert("Please upload a PDF");
+        return;
+      }
 
-  if (!file) {
-    alert("Please upload a PDF");
-    return;
-  }
+      try {
+        setLoading(true);
 
-  try {
-    setLoading(true);
+        const formData = new FormData();
+        formData.append("file", file);   // ✅ correct for web
 
-    const formData = new FormData();
+        const caseId = "123";
 
-    formData.append("file", {
-      uri: file.uri,
-      name: file.name,
-      type: "application/pdf",
-    } as any);
+        const res = await fetch(`${API.uploadPdf}/${caseId}`, {
+          method: "POST",
+          body: formData,
+        });
 
-    const caseId = "123"; // dummy for now
+        const data = await res.json();
 
-    const res = await fetch(`${API.uploadPdf}/${caseId}`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+        if (res.ok) {
+          setSummary(data.summary);
+        } else {
+          alert(data.error || "Upload failed");
+        }
 
-    const data = await res.json();
-    console.log("API RESPONSE:", data); 
-
-    if (res.ok) {
-      setSummary(data.summary);
-    } else {
-      alert(data.error || "Upload failed");
+      } catch (err) {
+        console.log(err);
+        alert("Server error");
+      } finally {
+        setLoading(false);
+      }
     }
-
-  } catch (err) {
-    console.log(err);
-    alert("Server error");
-  } finally {
-    setLoading(false);
-  }
-}
-
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <ScrollView style={{ flex: 1 }}>
 
       <Navbar />
 
@@ -133,34 +133,36 @@ if (mode === "file") {
         <Text style={styles.heading}>Case Summarizer</Text>
 
         {/* Toggle */}
-        <View style={{ flexDirection: "row", marginBottom: 20, width: "100%" }}>
+        <View style={styles.toggleContainer}>
 
           <TouchableOpacity
-            onPress={() => setMode("text")}
-            style={{
-              flex: 1,
-              padding: 10,
-              backgroundColor: mode === "text" ? "#000" : "#eee",
-              borderRadius: 8,
-              marginRight: 5,
+            onPress={() => {
+              setMode("text");
+              setSummary("");
+              setFileName("");
             }}
+            style={[
+              styles.toggleBtn,
+              mode === "text" && styles.activeBtn
+            ]}
           >
-            <Text style={{ color: mode === "text" ? "#fff" : "#000", textAlign: "center" }}>
+            <Text style={mode === "text" ? styles.activeText : styles.inactiveText}>
               Text
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setMode("file")}
-            style={{
-              flex: 1,
-              padding: 10,
-              backgroundColor: mode === "file" ? "#000" : "#eee",
-              borderRadius: 8,
-              marginLeft: 5,
+            onPress={() => {
+              setMode("file");
+              setSummary("");
+              setText("");
             }}
+            style={[
+              styles.toggleBtn,
+              mode === "file" && styles.activeBtn
+            ]}
           >
-            <Text style={{ color: mode === "file" ? "#fff" : "#000", textAlign: "center" }}>
+            <Text style={mode === "file" ? styles.activeText : styles.inactiveText}>
               PDF
             </Text>
           </TouchableOpacity>
@@ -196,19 +198,18 @@ if (mode === "file") {
         {/* Output */}
         {summary ? (
           <View style={styles.result}>
-            <Text style={{ fontWeight: "bold", marginBottom: 8 }}>
-              Summary:
-            </Text>
-            <Text>{summary}</Text>
+            <Text style={styles.resultTitle}>📄 Summary Result</Text>
+            <Text style={styles.resultText}>{summary}</Text>
           </View>
         ) : null}
 
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     justifyContent: "center",
@@ -220,6 +221,34 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+
+  toggleContainer: {
+    flexDirection: "row",
+    width: "100%",
+    marginBottom: 20,
+  },
+
+  toggleBtn: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+    marginHorizontal: 5,
+  },
+
+  activeBtn: {
+    backgroundColor: "#000",
+  },
+
+  activeText: {
+    color: "#fff",
+    textAlign: "center",
+  },
+
+  inactiveText: {
+    color: "#000",
+    textAlign: "center",
   },
 
   input: {
@@ -261,10 +290,22 @@ const styles = StyleSheet.create({
 
   result: {
     marginTop: 25,
-    padding: 15,
+    padding: 20,
     backgroundColor: "#f5f5f5",
     borderRadius: 12,
     width: "100%",
   },
-});
 
+  resultTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  resultText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#333",
+  },
+
+});

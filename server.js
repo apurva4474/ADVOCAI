@@ -22,6 +22,11 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
+const feedbackRoutes = require("./routes/feedbackRoutes");
+const contactRoutes = require("./routes/contactRoutes");
+
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/contact", contactRoutes);
 /* ---------------- AI SETUP ---------------- */
 
 const groq = new Groq({
@@ -81,10 +86,20 @@ app.post("/summarize", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.get("/summaries", async (req, res) => {
+  try {
+    const summaries = await Summary.find().sort({ createdAt: -1 });
 
+    res.json(summaries);
+
+  } catch (error) {
+    console.log("GET ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 /* ---------------- PDF UPLOAD + AI ---------------- */
 
-app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
+app.post("/upload-pdf", upload.single("file"), async (req, res) => {
   try {
     console.log("FILE RECEIVED:", req.file);
 
@@ -174,4 +189,3 @@ app.post("/chat/:caseId", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
