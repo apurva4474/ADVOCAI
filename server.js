@@ -22,11 +22,10 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-const feedbackRoutes = require("./routes/feedbackRoutes");
-const contactRoutes = require("./routes/contactRoutes");
 
-app.use("/api/feedback", feedbackRoutes);
-app.use("/api/contact", contactRoutes);
+/* ---------------- ROUTES ---------------- */
+// const contactRoutes = require("./routes/contactRoutes");
+// const feedbackRoutes = require("./routes/feedbackRoutes");
 /* ---------------- AI SETUP ---------------- */
 
 const groq = new Groq({
