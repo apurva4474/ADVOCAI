@@ -1,4 +1,3 @@
-
 import * as DocumentPicker from "expo-document-picker";
 import { useState } from "react";
 import {
@@ -22,7 +21,7 @@ export default function Summarizer() {
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<any>(null);
 
-  // 📄 File Picker (FIXED FOR WEB)
+  // 📄 File Picker
   const pickFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
@@ -31,7 +30,6 @@ export default function Summarizer() {
     if (result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
 
-      // 🔥 convert to real File (important for web)
       const response = await fetch(asset.uri);
       const blob = await response.blob();
 
@@ -47,7 +45,7 @@ export default function Summarizer() {
   // ✨ Summarize
   const handleSummarize = async () => {
 
-    // TEXT MODE
+    // ✅ TEXT MODE FIXED
     if (mode === "text") {
 
       if (!text) {
@@ -65,7 +63,7 @@ export default function Summarizer() {
           },
           body: JSON.stringify({
             title: "User Case",
-            content: text
+            content: text,
           }),
         });
 
@@ -85,7 +83,7 @@ export default function Summarizer() {
       }
     }
 
-    // FILE MODE
+    // ✅ FILE MODE FIXED
     if (mode === "file") {
 
       if (!file) {
@@ -97,9 +95,10 @@ export default function Summarizer() {
         setLoading(true);
 
         const formData = new FormData();
-        formData.append("file", file);   // ✅ correct for web
+        formData.append("file", file);
 
-        const caseId = "123";
+        // 🔥 dynamic id (IMPORTANT)
+        const caseId = Date.now().toString();
 
         const res = await fetch(`${API.uploadPdf}/${caseId}`, {
           method: "POST",
@@ -209,26 +208,22 @@ export default function Summarizer() {
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-
   heading: {
     fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
   },
-
   toggleContainer: {
     flexDirection: "row",
     width: "100%",
     marginBottom: 20,
   },
-
   toggleBtn: {
     flex: 1,
     padding: 10,
@@ -236,21 +231,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     marginHorizontal: 5,
   },
-
   activeBtn: {
     backgroundColor: "#000",
   },
-
   activeText: {
     color: "#fff",
     textAlign: "center",
   },
-
   inactiveText: {
     color: "#000",
     textAlign: "center",
   },
-
   input: {
     width: "100%",
     height: 140,
@@ -260,7 +251,6 @@ const styles = StyleSheet.create({
     padding: 15,
     textAlignVertical: "top",
   },
-
   uploadBtn: {
     marginTop: 15,
     padding: 12,
@@ -269,11 +259,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-
   uploadText: {
     color: "#333",
   },
-
   button: {
     backgroundColor: "#000",
     padding: 15,
@@ -282,12 +270,10 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
   },
-
   result: {
     marginTop: 25,
     padding: 20,
@@ -295,17 +281,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: "100%",
   },
-
   resultTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
-
   resultText: {
     fontSize: 15,
     lineHeight: 22,
     color: "#333",
   },
-
 });

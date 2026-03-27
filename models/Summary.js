@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 
 const summarySchema = new mongoose.Schema({
-  caseId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Case"
-  },
+  caseId: String,
   filename: String,
   summary: String,
   createdAt: {

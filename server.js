@@ -99,23 +99,12 @@ app.get("/summaries", async (req, res) => {
 });
 /* ---------------- PDF UPLOAD + AI ---------------- */
 
-app.post("/upload-pdf", upload.single("file"), async (req, res) => {
+app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
   try {
-    console.log("FILE RECEIVED:", req.file);
+    const { caseId } = req.params;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    let pdfData;
-
-    try {
-      const dataBuffer = fs.readFileSync(req.file.path);
-      pdfData = await pdfParse(dataBuffer);
-    } catch (err) {
-      console.log("PDF ERROR:", err);
-      return res.status(500).json({ error: "Invalid PDF file" });
-    }
+    const dataBuffer = fs.readFileSync(req.file.path);
+    const pdfData = await pdfParse(dataBuffer);
 
     const text = pdfData.text.replace(/\s+/g, " ").slice(0, 8000);
 
@@ -132,19 +121,17 @@ app.post("/upload-pdf", upload.single("file"), async (req, res) => {
     const result = aiResponse.choices[0].message.content;
 
     const newSummary = new Summary({
+      caseId: caseId, // TEMP FIX
       filename: req.file.originalname,
       summary: result,
     });
 
     await newSummary.save();
 
-    res.json({
-      message: "PDF processed successfully",
-      summary: result,
-    });
+    res.json({ summary: result });
 
   } catch (error) {
-    console.log("UPLOAD ERROR:", error);
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
