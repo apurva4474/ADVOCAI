@@ -107,7 +107,7 @@ app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
     const pdfData = await pdfParse(dataBuffer);
 
     const text = pdfData.text.replace(/\s+/g, " ").slice(0, 8000);
-
+console.log("CASE ID TYPE:", typeof caseId, caseId);
     const aiResponse = await groq.chat.completions.create({
       messages: [
         {

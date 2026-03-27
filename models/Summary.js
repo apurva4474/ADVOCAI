@@ -4,10 +4,7 @@ const summarySchema = new mongoose.Schema({
   caseId: String,
   filename: String,
   summary: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model("Summary", summarySchema);
+// 🔥 THIS LINE FIXES CACHE ISSUE
+module.exports = mongoose.models.Summary || mongoose.model("Summary", summarySchema);
