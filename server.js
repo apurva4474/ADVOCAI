@@ -134,9 +134,87 @@ console.log("CASE ID TYPE:", typeof caseId, caseId);
     res.status(500).json({ error: error.message });
   }
 });
+app.post("/arguments", async (req, res) => {
+  try {
+    const { content } = req.body;
 
+    if (!content) {
+      return res.status(400).json({ error: "No content provided" });
+    }
+
+    const aiResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: "You are a legal assistant AI.",
+        },
+        {
+          role: "user",
+          content: `Generate strong legal arguments for BOTH sides (plaintiff and defendant) based on this case:\n\n${content}`,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    const result = aiResponse.choices[0].message.content;
+
+    res.json({ arguments: result });
+
+  } catch (error) {
+    console.log("ARGUMENT ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 /* ---------------- CHAT / ARGUMENT GENERATOR ---------------- */
+app.post("/analyze-case", async (req, res) => {
+  try {
+    const { content } = req.body;
 
+    // 🔹 Step 1: Summarize
+    const summaryRes = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `Summarize this legal case:\n\n${content}`,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    const summary = summaryRes.choices[0].message.content;
+
+    // 🔹 Step 2: Generate Arguments
+    const argumentRes = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `Based on this case summary, generate strong arguments for both plaintiff and defendant:\n\n${summary}`,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    const argumentsText = argumentRes.choices[0].message.content;
+
+    // 🔹 Save (optional)
+    const newSummary = new Summary({
+      caseId: Date.now().toString(),
+      filename: "New Case",
+      summary,
+    });
+
+    await newSummary.save();
+
+    res.json({
+      summary,
+      arguments: argumentsText,
+    });
+
+  } catch (error) {
+    console.log("ANALYZE ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 app.post("/chat/:caseId", async (req, res) => {
   try {
     const { message } = req.body;
