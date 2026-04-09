@@ -1,9 +1,16 @@
 const mongoose = require("mongoose");
 
-const feedbackSchema = new mongoose.Schema({
-  name: String,
-  email: String,
-  message: String,
-}, { timestamps: true });
+const summarySchema = new mongoose.Schema({
+  caseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Case",
+    required: true
+  },
+  text: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
-module.exports = mongoose.model("Feedback", feedbackSchema);
+module.exports = mongoose.model("Summary", summarySchema);

@@ -1,44 +1,57 @@
+import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
   FlatList,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  ActivityIndicator
+  View,
 } from "react-native";
 import Navbar from "../components/Navbar";
 import { API } from "../constants/api";
 
 export default function History() {
-
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchSummaries = async () => {
+  const navigation = useNavigation<any>();
+
+  const fetchCases = async () => {
     try {
-      const res = await fetch(API.getSummaries);
+      const res = await fetch(API.getCases); // 🔥 updated API
       const json = await res.json();
       setData(json);
     } catch (err) {
-      console.log(err);
+      console.log("FETCH CASES ERROR:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSummaries();
+    fetchCases();
   }, []);
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() =>
+        navigation.navigate("CaseDetails", {
+          caseId: item.caseId,
+        })
+      }
+    >
       <Text style={styles.title}>
-        {item.filename || "Text Summary"}
+        {item.title || "Untitled Case"}
       </Text>
 
       <Text numberOfLines={3} style={styles.preview}>
-        {item.summary}
+        {item.summary || "No summary available"}
+      </Text>
+
+      <Text style={styles.date}>
+        {new Date(item.createdAt).toLocaleString()}
       </Text>
     </TouchableOpacity>
   );
@@ -48,15 +61,20 @@ export default function History() {
       <Navbar />
 
       <View style={styles.container}>
-        <Text style={styles.heading}>📂 Summary History</Text>
+        <Text style={styles.heading}>📂 Case History</Text>
 
         {loading ? (
           <ActivityIndicator size="large" />
         ) : (
           <FlatList
             data={data}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => item.caseId}
             renderItem={renderItem}
+            ListEmptyComponent={
+              <Text style={{ textAlign: "center", marginTop: 20 }}>
+                No cases found
+              </Text>
+            }
           />
         )}
       </View>
@@ -83,8 +101,14 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "bold",
     marginBottom: 5,
+    fontSize: 16,
   },
   preview: {
     color: "#444",
+    marginBottom: 5,
+  },
+  date: {
+    fontSize: 12,
+    color: "#888",
   },
 });

@@ -12,6 +12,7 @@ export const API = {
   getSummaries: `${BASE_URL}/summaries`,
   analyzeCase: `${BASE_URL}/analyze-case`,
   arguments: `${BASE_URL}/arguments`,
+  getCases: `${BASE_URL}/cases`,
 };
 
 export default API;

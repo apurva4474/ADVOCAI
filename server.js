@@ -98,39 +98,56 @@ app.get("/summaries", async (req, res) => {
 });
 /* ---------------- PDF UPLOAD + AI ---------------- */
 
-app.post("/upload-pdf/:caseId", upload.single("file"), async (req, res) => {
+app.post("/upload-pdf", upload.single("file"), async (req, res) => {
   try {
-    const { caseId } = req.params;
-
+    // 1. Read PDF
     const dataBuffer = fs.readFileSync(req.file.path);
     const pdfData = await pdfParse(dataBuffer);
 
-    const text = pdfData.text.replace(/\s+/g, " ").slice(0, 8000);
-console.log("CASE ID TYPE:", typeof caseId, caseId);
+    const extractedText = pdfData.text.replace(/\s+/g, " ").slice(0, 8000);
+
+    // 2. Create Case
+    const newCase = new Case({
+      title: req.file.originalname,
+    });
+    await newCase.save();
+
+    // 3. Save Document
+    const newDoc = new Document({
+      caseId: newCase._id,
+      filename: req.file.originalname,
+      content: extractedText,
+    });
+    await newDoc.save();
+
+    // 4. Generate Summary (AI)
     const aiResponse = await groq.chat.completions.create({
       messages: [
         {
           role: "user",
-          content: `Summarize this legal document:\n\n${text}`,
+          content: `Summarize this legal document:\n\n${extractedText}`,
         },
       ],
       model: "llama-3.3-70b-versatile",
     });
 
-    const result = aiResponse.choices[0].message.content;
+    const summaryText = aiResponse.choices[0].message.content;
 
+    // 5. Save Summary
     const newSummary = new Summary({
-      caseId: caseId, // TEMP FIX
-      filename: req.file.originalname,
-      summary: result,
+      caseId: newCase._id,
+      text: summaryText,
     });
-
     await newSummary.save();
 
-    res.json({ summary: result });
+    // 6. Response
+    res.json({
+      caseId: newCase._id,
+      summary: summaryText,
+    });
 
   } catch (error) {
-    console.log(error);
+    console.log("UPLOAD ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -165,53 +182,84 @@ app.post("/arguments", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-/* ---------------- CHAT / ARGUMENT GENERATOR ---------------- */
-app.post("/analyze-case", async (req, res) => {
+app.get("/cases", async (req, res) => {
   try {
-    const { content } = req.body;
+    const cases = await Case.find().sort({ createdAt: -1 });
 
-    // 🔹 Step 1: Summarize
-    const summaryRes = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: `Summarize this legal case:\n\n${content}`,
-        },
-      ],
-      model: "llama-3.3-70b-versatile",
-    });
+    const result = [];
 
-    const summary = summaryRes.choices[0].message.content;
+    for (let c of cases) {
+      const summary = await Summary.findOne({ caseId: c._id });
 
-    // 🔹 Step 2: Generate Arguments
-    const argumentRes = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: `Based on this case summary, generate strong arguments for both plaintiff and defendant:\n\n${summary}`,
-        },
-      ],
-      model: "llama-3.3-70b-versatile",
-    });
+      result.push({
+        caseId: c._id,
+        title: c.title,
+        summary: summary ? summary.text : "No summary",
+        createdAt: c.createdAt,
+      });
+    }
 
-    const argumentsText = argumentRes.choices[0].message.content;
+    res.json(result);
+  } catch (error) {
+    console.log("GET CASES ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+app.get("/cases/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-    // 🔹 Save (optional)
-    const newSummary = new Summary({
-      caseId: Date.now().toString(),
-      filename: "New Case",
-      summary,
-    });
+    const caseData = await Case.findById(id);
+    if (!caseData) {
+      return res.status(404).json({ error: "Case not found" });
+    }
 
-    await newSummary.save();
+    const document = await Document.findOne({ caseId: id });
+    const summary = await Summary.findOne({ caseId: id });
 
     res.json({
-      summary,
+      caseId: caseData._id,
+      title: caseData.title,
+      document: document ? document.content : null,
+      summary: summary ? summary.text : null,
+      createdAt: caseData.createdAt,
+    });
+
+  } catch (error) {
+    console.log("GET CASE DETAILS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+/* ---------------- CHAT / ARGUMENT GENERATOR ---------------- */
+app.post("/generate-arguments", async (req, res) => {
+  try {
+    const { caseId } = req.body;
+
+    const summary = await Summary.findOne({ caseId });
+
+    if (!summary) {
+      return res.status(404).json({ error: "Summary not found" });
+    }
+
+    const aiResponse = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `Based on the following legal case summary, generate strong legal arguments:\n\n${summary.text}`,
+        },
+      ],
+      model: "llama-3.3-70b-versatile",
+    });
+
+    const argumentsText = aiResponse.choices[0].message.content;
+
+    res.json({
+      caseId,
       arguments: argumentsText,
     });
 
   } catch (error) {
-    console.log("ANALYZE ERROR:", error);
+    console.log("ARGUMENT ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 });
