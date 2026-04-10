@@ -13,6 +13,8 @@ export const API = {
   analyzeCase: `${BASE_URL}/analyze-case`,
   arguments: `${BASE_URL}/arguments`,
   getCases: `${BASE_URL}/cases`,
+  getCaseById: `${BASE_URL}/cases`,
+generateArguments: `${BASE_URL}/generate-arguments`,
 };
 
 export default API;

@@ -1,16 +1,9 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const summarySchema = new mongoose.Schema({
-  caseId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Case",
-    required: true
-  },
-  text: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+const feedbackSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  message: String,
+}, { timestamps: true });
 
-module.exports = mongoose.model("Summary", summarySchema);
+export default mongoose.model("Feedback", feedbackSchema);

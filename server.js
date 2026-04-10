@@ -96,9 +96,43 @@ app.get("/summaries", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+const authMiddleware = require("./middleware/auth");
 /* ---------------- PDF UPLOAD + AI ---------------- */
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-app.post("/upload-pdf", upload.single("file"), async (req, res) => {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      "SECRET_KEY",
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+  } catch (error) {
+    console.log("LOGIN ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+app.post("/upload-pdf",authMiddleware, upload.single("file"), async (req, res) => {
   try {
     // 1. Read PDF
     const dataBuffer = fs.readFileSync(req.file.path);
@@ -109,6 +143,7 @@ app.post("/upload-pdf", upload.single("file"), async (req, res) => {
     // 2. Create Case
     const newCase = new Case({
       title: req.file.originalname,
+      userId: req.userId,
     });
     await newCase.save();
 
@@ -182,9 +217,9 @@ app.post("/arguments", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/cases", async (req, res) => {
+app.get("/cases", authMiddleware, async (req, res) => {
   try {
-    const cases = await Case.find().sort({ createdAt: -1 });
+    const cases = await Case.find({ userId: req.userId }).sort({ createdAt: -1 });
 
     const result = [];
 
@@ -205,7 +240,39 @@ app.get("/cases", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/cases/:id", async (req, res) => {
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("./models/User");
+
+app.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // check existing user
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    await user.save();
+
+    res.json({ message: "User registered successfully" });
+
+  } catch (error) {
+    console.log("REGISTER ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+app.get("/cases/:id",authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -231,7 +298,7 @@ app.get("/cases/:id", async (req, res) => {
   }
 });
 /* ---------------- CHAT / ARGUMENT GENERATOR ---------------- */
-app.post("/generate-arguments", async (req, res) => {
+app.post("/generate-arguments",authMiddleware, async (req, res) => {
   try {
     const { caseId } = req.body;
 

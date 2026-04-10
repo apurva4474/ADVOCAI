@@ -11,9 +11,10 @@ import {
 } from "react-native";
 import Navbar from "../components/Navbar";
 import { API } from "../constants/api";
-
+import { getToken } from "../utils/auth";
+import { useNavigation } from "@react-navigation/native";
 export default function Summarizer() {
-
+  const navigation = useNavigation<any>();
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"text" | "file">("text");
   const [summary, setSummary] = useState("");
@@ -83,43 +84,57 @@ export default function Summarizer() {
       }
     }
 
-    // ✅ FILE MODE FIXED
-    if (mode === "file") {
+// ✅ FILE MODE FIXED WITH AUTH
+if (mode === "file") {
 
-      if (!file) {
-        alert("Please upload a PDF");
-        return;
-      }
+  if (!file) {
+    alert("Please upload a PDF");
+    return;
+  }
 
-      try {
-        setLoading(true);
+  try {
+    setLoading(true);
 
-        const formData = new FormData();
-        formData.append("file", file);
+    const token = await getToken(); // 🔥 get token
 
-        // 🔥 dynamic id (IMPORTANT)
-        const caseId = Date.now().toString();
-
-        const res = await fetch(`${API.uploadPdf}/${caseId}`, {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          setSummary(data.summary);
-        } else {
-          alert(data.error || "Upload failed");
-        }
-
-      } catch (err) {
-        console.log(err);
-        alert("Server error");
-      } finally {
-        setLoading(false);
-      }
+    if (!token) {
+      alert("Please login first");
+      navigation.navigate("Login", {
+      redirectTo: "Summarizer",
+});
+      return;
     }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(API.uploadPdf, {
+      method: "POST",
+      headers: {
+        Authorization: token, // 🔥 IMPORTANT
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setSummary(data.summary);
+
+      // 🔥 OPTIONAL (very good UX)
+      // navigation.navigate("CaseDetails", { caseId: data.caseId });
+
+    } else {
+      alert(data.error || "Upload failed");
+    }
+
+  } catch (err) {
+    console.log(err);
+    alert("Server error");
+  } finally {
+    setLoading(false);
+  }
+}
   };
 
   return (

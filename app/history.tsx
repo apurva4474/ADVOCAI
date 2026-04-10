@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import Navbar from "../components/Navbar";
 import { API } from "../constants/api";
+import { getToken } from "../auth";
 
 export default function History() {
   const [data, setData] = useState<any[]>([]);
@@ -17,13 +18,34 @@ export default function History() {
 
   const navigation = useNavigation<any>();
 
+  // 🔥 Fetch cases with auth
   const fetchCases = async () => {
     try {
-      const res = await fetch(API.getCases); // 🔥 updated API
+      const token = await getToken();
+
+      if (!token) {
+        alert("Please login first");
+        navigation.navigate("Login");
+        return;
+      }
+
+      const res = await fetch(API.getCases, {
+        headers: {
+          Authorization: token,
+        },
+      });
+
       const json = await res.json();
-      setData(json);
+
+      if (res.ok) {
+        setData(json);
+      } else {
+        console.log("API ERROR:", json);
+        alert("Failed to fetch cases");
+      }
     } catch (err) {
       console.log("FETCH CASES ERROR:", err);
+      alert("Server error");
     } finally {
       setLoading(false);
     }
