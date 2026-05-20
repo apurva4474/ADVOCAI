@@ -204,7 +204,7 @@ export default function ArgumentGenerator() {
                   key={index}
                   style={[
                     styles.caseCard,
-                    selectedCaseId === item._id && styles.selectedCard,
+                    selectedCaseId === item._id ? styles.selectedCard: null,
                   ]}
                   onPress={() => setSelectedCaseId(item._id)}
                 >
