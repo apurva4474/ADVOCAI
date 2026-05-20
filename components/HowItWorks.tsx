@@ -1,167 +1,61 @@
-import { useEffect, useRef } from "react";
-import { Animated, Dimensions, StyleSheet, Text, View } from "react-native";
-
-const { width } = Dimensions.get("window");
-
-const isMobile = width < 768;
+import { Text, View } from "react-native";
+import { howStyles } from "../styles/components/howStyles";
 
 export default function HowItWorks() {
 
-const lineAnim = useRef(new Animated.Value(0)).current;
+  const steps = [
+    {
+      number: "1",
+      title: "Upload Case File",
+      text: "Upload legal PDFs or documents securely.",
+    },
+    {
+      number: "2",
+      title: "AI Analysis",
+      text: "AI extracts key legal insights instantly.",
+    },
+    {
+      number: "3",
+      title: "Get Results",
+      text: "Receive summaries and arguments quickly.",
+    },
+  ];
 
-useEffect(() => {
-  Animated.timing(lineAnim,{
-    toValue:1,
-    duration:1200,
-    useNativeDriver:false
-  }).start();
-},[]);
+  return (
+    <View style={howStyles.container}>
 
-const animatedWidth = lineAnim.interpolate({
-  inputRange:[0,1],
-  outputRange:["0%","80%"]
-});
+      <Text style={howStyles.heading}>
+        How ADVOC-AI Works
+      </Text>
 
-return(
+      <Text style={howStyles.subheading}>
+        Fast. Smart. AI-powered legal assistance.
+      </Text>
 
-<View style={styles.container}>
+      <View style={howStyles.steps}>
 
-<Text style={styles.heading}>How ADVOC-AI Works</Text>
+        {steps.map((step, index) => (
+          <View key={index} style={howStyles.card}>
 
-<View style={styles.stepsWrapper}>
+            <View style={howStyles.circle}>
+              <Text style={howStyles.circleText}>
+                {step.number}
+              </Text>
+            </View>
 
-{/* connector line only for desktop */}
-{!isMobile && (
-<Animated.View style={[styles.line,{width:animatedWidth}]} />
-)}
+            <Text style={howStyles.title}>
+              {step.title}
+            </Text>
 
-<View style={[styles.steps,isMobile && styles.mobileSteps]}>
+            <Text style={howStyles.text}>
+              {step.text}
+            </Text>
 
-<View style={styles.step}>
-<View style={styles.circle}>
-<Text style={styles.number}>1</Text>
-</View>
+          </View>
+        ))}
 
-<Text style={styles.title}>Upload Case File</Text>
+      </View>
 
-<Text style={styles.text}>
-Upload PDFs or images containing legal case information.
-</Text>
-</View>
-
-
-<View style={styles.step}>
-<View style={styles.circle}>
-<Text style={styles.number}>2</Text>
-</View>
-
-<Text style={styles.title}>AI Analysis</Text>
-
-<Text style={styles.text}>
-ADVOC-AI analyses the document and extracts key insights.
-</Text>
-</View>
-
-
-<View style={styles.step}>
-<View style={styles.circle}>
-<Text style={styles.number}>3</Text>
-</View>
-
-<Text style={styles.title}>Get Results</Text>
-
-<Text style={styles.text}>
-Receive summaries, arguments and timelines instantly.
-</Text>
-</View>
-
-</View>
-</View>
-</View>
-
-);
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-
-container:{
-width:"100%",
-paddingVertical:90,
-paddingHorizontal:20,
-backgroundColor:"#f5f7ff",
-alignItems:"center"
-},
-
-heading:{
-fontSize:34,
-fontWeight:"bold",
-color:"#111",
-marginBottom:70,
-textAlign:"center"
-},
-
-stepsWrapper:{
-width:"100%",
-maxWidth:1000,
-alignItems:"center",
-position:"relative"
-},
-
-line:{
-position:"absolute",
-top:35,
-height:3,
-backgroundColor:"#4C6EF5"
-},
-
-steps:{
-flexDirection:"row",
-justifyContent:"space-between",
-alignItems:"flex-start",
-width:"100%"
-},
-
-mobileSteps:{
-flexDirection:"column",
-alignItems:"center"
-},
-
-step:{
-width:isMobile?"100%":260,
-alignItems:"center",
-marginBottom:50,
-paddingHorizontal:10
-},
-
-circle:{
-width:70,
-height:70,
-borderRadius:35,
-backgroundColor:"#4C6EF5",
-justifyContent:"center",
-alignItems:"center",
-marginBottom:20
-},
-
-number:{
-color:"white",
-fontSize:26,
-fontWeight:"bold"
-},
-
-title:{
-fontSize:20,
-fontWeight:"bold",
-color:"#111",
-marginBottom:10,
-textAlign:"center"
-},
-
-text:{
-fontSize:15,
-color:"#555",
-textAlign:"center",
-lineHeight:22
-}
-
-});

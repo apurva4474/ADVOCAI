@@ -1,7 +1,9 @@
 import * as DocumentPicker from "expo-document-picker";
-import { useState } from "react";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,10 +11,11 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
 import Navbar from "../components/Navbar";
 import { API } from "../constants/api";
 import { getToken } from "../utils/auth";
-import { useNavigation } from "@react-navigation/native";
 export default function Summarizer() {
   const navigation = useNavigation<any>();
   const [text, setText] = useState("");
@@ -21,8 +24,11 @@ export default function Summarizer() {
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<any>(null);
+  const router = useRouter();
+  const [processingText, setProcessingText] = useState("Initializing AI...");
+const fadeAnim = useRef(new Animated.Value(0)).current;
+const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  // 📄 File Picker
   const pickFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
@@ -99,9 +105,11 @@ if (mode === "file") {
 
     if (!token) {
       alert("Please login first");
-      navigation.navigate("Login", {
-      redirectTo: "Summarizer",
+      router.push({
+  pathname: "/login",
+  params: { redirectTo: "summarizer" },
 });
+
       return;
     }
 
@@ -138,15 +146,33 @@ if (mode === "file") {
   };
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+  <ScrollView
+    style={{ flex: 1, backgroundColor: "#0B0F19" }}
+    showsVerticalScrollIndicator={false}
+  >
 
-      <Navbar />
+    <Navbar />
 
-      <View style={styles.container}>
+    <View style={styles.container}>
 
-        <Text style={styles.heading}>Case Summarizer</Text>
+      {/* HERO */}
+      <View style={styles.hero}>
 
-        {/* Toggle */}
+        <Text style={styles.heading}>
+          AI Legal Summarizer
+        </Text>
+
+        <Text style={styles.subheading}>
+          Upload case files or paste legal text to generate
+          AI-powered summaries instantly.
+        </Text>
+
+      </View>
+
+      {/* MAIN CARD */}
+      <View style={styles.card}>
+
+        {/* TOGGLE */}
         <View style={styles.toggleContainer}>
 
           <TouchableOpacity
@@ -160,8 +186,14 @@ if (mode === "file") {
               mode === "text" && styles.activeBtn
             ]}
           >
-            <Text style={mode === "text" ? styles.activeText : styles.inactiveText}>
-              Text
+            <Text
+              style={
+                mode === "text"
+                  ? styles.activeText
+                  : styles.inactiveText
+              }
+            >
+              Text Input
             </Text>
           </TouchableOpacity>
 
@@ -176,134 +208,238 @@ if (mode === "file") {
               mode === "file" && styles.activeBtn
             ]}
           >
-            <Text style={mode === "file" ? styles.activeText : styles.inactiveText}>
-              PDF
+            <Text
+              style={
+                mode === "file"
+                  ? styles.activeText
+                  : styles.inactiveText
+              }
+            >
+              PDF Upload
             </Text>
           </TouchableOpacity>
 
         </View>
 
-        {/* Input */}
+        {/* INPUT */}
         {mode === "text" ? (
           <TextInput
-            placeholder="Paste your case details..."
+            placeholder="Paste legal case details..."
+            placeholderTextColor="#6B7280"
             multiline
             value={text}
             onChangeText={setText}
             style={styles.input}
           />
         ) : (
-          <TouchableOpacity style={styles.uploadBtn} onPress={pickFile}>
+          <TouchableOpacity
+            style={styles.uploadBox}
+            onPress={pickFile}
+          >
+            <Text style={styles.uploadIcon}>📄</Text>
+
+            <Text style={styles.uploadTitle}>
+              Upload Legal PDF
+            </Text>
+
             <Text style={styles.uploadText}>
-              {fileName ? fileName : "Upload PDF 📄"}
+              {fileName
+                ? fileName
+                : "Tap here to upload your case file"}
             </Text>
           </TouchableOpacity>
         )}
 
-        {/* Button */}
-        <TouchableOpacity style={styles.button} onPress={handleSummarize}>
+        {/* BUTTON */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleSummarize}
+          activeOpacity={0.85}
+        >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#000" />
           ) : (
-            <Text style={styles.buttonText}>Summarize</Text>
+            <Text style={styles.buttonText}>
+              Generate Summary
+            </Text>
           )}
         </TouchableOpacity>
 
-        {/* Output */}
-        {summary ? (
-          <View style={styles.result}>
-            <Text style={styles.resultTitle}>📄 Summary Result</Text>
-            <Text style={styles.resultText}>{summary}</Text>
-          </View>
-        ) : null}
-
       </View>
-    </ScrollView>
-  );
+
+      {/* RESULT */}
+      {summary ? (
+        <View style={styles.resultCard}>
+
+          <Text style={styles.resultTitle}>
+            📑 AI Summary Result
+          </Text>
+
+          <Text style={styles.resultText}>
+            {summary}
+          </Text>
+
+        </View>
+      ) : null}
+
+    </View>
+
+  </ScrollView>
+);
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    justifyContent: "center",
+    padding: 24,
     alignItems: "center",
-    padding: 20,
+    backgroundColor: "#0B0F19",
+    paddingBottom: 60,
   },
+
+  hero: {
+    alignItems: "center",
+    marginTop: 50,
+    marginBottom: 40,
+    maxWidth: 900,
+  },
+
   heading: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 20,
+    fontSize: 42,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    textAlign: "center",
+    marginBottom: 16,
   },
+
+  subheading: {
+    fontSize: 17,
+    color: "#9CA3AF",
+    textAlign: "center",
+    lineHeight: 28,
+    maxWidth: 700,
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 950,
+    backgroundColor: "#111827",
+    borderRadius: 28,
+    padding: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+
   toggleContainer: {
     flexDirection: "row",
-    width: "100%",
-    marginBottom: 20,
+    marginBottom: 28,
+    backgroundColor: "#1F2937",
+    padding: 6,
+    borderRadius: 16,
   },
+
   toggleBtn: {
     flex: 1,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: "#eee",
-    marginHorizontal: 5,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
   },
+
   activeBtn: {
-    backgroundColor: "#000",
+    backgroundColor: "#D4AF37",
   },
+
   activeText: {
-    color: "#fff",
-    textAlign: "center",
-  },
-  inactiveText: {
     color: "#000",
-    textAlign: "center",
+    fontWeight: "700",
+    fontSize: 15,
   },
+
+  inactiveText: {
+    color: "#9CA3AF",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+
   input: {
-    width: "100%",
-    height: 140,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 15,
-    textAlignVertical: "top",
-  },
-  uploadBtn: {
-    marginTop: 15,
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 10,
-    width: "100%",
-    alignItems: "center",
-  },
-  uploadText: {
-    color: "#333",
-  },
-  button: {
-    backgroundColor: "#000",
-    padding: 15,
-    borderRadius: 12,
-    marginTop: 15,
-    width: "100%",
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  result: {
-    marginTop: 25,
+    backgroundColor: "#0F172A",
+    minHeight: 220,
+    borderRadius: 20,
     padding: 20,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    width: "100%",
+    color: "#fff",
+    fontSize: 16,
+    textAlignVertical: "top",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
   },
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
+
+  uploadBox: {
+    minHeight: 240,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#D4AF37",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0F172A",
+    padding: 30,
+  },
+
+  uploadIcon: {
+    fontSize: 56,
+    marginBottom: 16,
+  },
+
+  uploadTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
     marginBottom: 10,
   },
-  resultText: {
+
+  uploadText: {
     fontSize: 15,
-    lineHeight: 22,
-    color: "#333",
+    color: "#9CA3AF",
+    textAlign: "center",
   },
+
+  button: {
+    marginTop: 28,
+    backgroundColor: "#D4AF37",
+    paddingVertical: 18,
+    borderRadius: 18,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#000",
+    fontWeight: "800",
+    fontSize: 16,
+  },
+
+  resultCard: {
+    width: "100%",
+    maxWidth: 950,
+    marginTop: 35,
+    backgroundColor: "#111827",
+    borderRadius: 28,
+    padding: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+
+  resultTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 20,
+  },
+
+  resultText: {
+    color: "#D1D5DB",
+    fontSize: 16,
+    lineHeight: 30,
+  },
+
 });

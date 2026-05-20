@@ -1,130 +1,121 @@
-
-import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { useRef } from "react";
 
-const { width } = Dimensions.get("window");
-const isMobile = width < 768;
+import {
+  Animated,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { featuresStyles } from "../styles/components/featuresStyles";
 
 export default function Features() {
 
   const router = useRouter();
 
+  const scale1 = useRef(new Animated.Value(1)).current;
+  const scale2 = useRef(new Animated.Value(1)).current;
+  const scale3 = useRef(new Animated.Value(1)).current;
+
+  const animateIn = (scale: Animated.Value) => {
+    Animated.spring(scale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animateOut = (scale: Animated.Value) => {
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 4,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const features = [
+    {
+      emoji: "📄",
+      title: "Document Summariser",
+      text: "Upload legal PDFs and get accurate AI summaries instantly.",
+      route: "/summarizer",
+      scale: scale1,
+    },
+    {
+      emoji: "⚖️",
+      title: "Argument Generator",
+      text: "Generate strong and structured legal arguments with AI.",
+      route: "/argument",
+      scale: scale2,
+    },
+    {
+      emoji: "📅",
+      title: "Timeline Builder",
+      text: "Organize important case events in chronological order.",
+      route: "/calendar",
+      scale: scale3,
+    },
+  ];
+
   return (
-    <View style={styles.container}>
+    <View style={featuresStyles.container}>
 
-      <Text style={styles.heading}>Powerful AI Tools</Text>
+      <Text style={featuresStyles.heading}>
+        Powerful AI Tools
+      </Text>
 
-      <View style={[styles.cardContainer, isMobile && styles.mobileCards]}>
+      <Text style={featuresStyles.subheading}>
+        Smart legal assistance designed for speed and precision.
+      </Text>
 
-        {/* Summarizer */}
-        <TouchableOpacity 
-          style={styles.card}
-          onPress={() => router.push("/summarizer")}
-        >
-          <Text style={styles.icon}>📄</Text>
-          <Text style={styles.title}>Document Summariser</Text>
-          <Text style={styles.text}>
-            Upload PDFs or images of case files and get instant AI summaries.
-          </Text>
-        </TouchableOpacity>
+      <View style={featuresStyles.cardContainer}>
 
-        {/* Argument Generator */}
-        <TouchableOpacity 
-          style={styles.card}
-          onPress={() => router.push("/argument")}
-        >
-          <Text style={styles.icon}>⚖️</Text>
-          <Text style={styles.title}>Argument Generator</Text>
-          <Text style={styles.text}>
-            Generate strong legal arguments automatically from case facts.
-          </Text>
-        </TouchableOpacity>
+        {features.map((item, index) => (
 
-        {/* Timeline */}
-        <TouchableOpacity 
-          style={styles.card}
-          onPress={() => router.push("/calendar")}
-        >
-          <Text style={styles.icon}>📅</Text>
-          <Text style={styles.title}>Timeline Builder</Text>
-          <Text style={styles.text}>
-            Organize case events into a clear chronological timeline.
-          </Text>
-        </TouchableOpacity>
+          <Animated.View
+            key={index}
+            style={{
+              transform: [{ scale: item.scale }],
+              flex: 1,
+            }}
+          >
 
-        {/* Research */}
-        <TouchableOpacity 
-          style={styles.card}
-          onPress={() => router.push("/cases")}
-        >
-          <Text style={styles.icon}>🔎</Text>
-          <Text style={styles.title}>Legal Research</Text>
-          <Text style={styles.text}>
-            Extract insights from long legal documents instantly.
-          </Text>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={["rgba(212,175,55,0.5)", "rgba(255,255,255,0.03)"]}
+              style={featuresStyles.gradientBorder}
+            >
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={featuresStyles.card}
+                onPressIn={() => animateIn(item.scale)}
+                onPressOut={() => animateOut(item.scale)}
+                onPress={() => router.push(item.route as any)}
+              >
+
+                <Text style={featuresStyles.icon}>
+                  {item.emoji}
+                </Text>
+
+                <Text style={featuresStyles.title}>
+                  {item.title}
+                </Text>
+
+                <Text style={featuresStyles.text}>
+                  {item.text}
+                </Text>
+
+              </TouchableOpacity>
+
+            </LinearGradient>
+
+          </Animated.View>
+
+        ))}
 
       </View>
 
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-
-  container: {
-    paddingVertical: 80,
-    paddingHorizontal: 40,
-    alignItems: "center",
-  },
-
-  heading: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "black",
-    marginBottom: 50,
-  },
-
-  cardContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-
-  mobileCards: {
-    flexDirection: "column",
-    width: "100%",
-  },
-
-  card: {
-    width: isMobile ? "100%" : 250,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    padding: 25,
-    borderRadius: 12,
-    margin: 15,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-  },
-
-  icon: {
-    fontSize: 40,
-    marginBottom: 15,
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginBottom: 10,
-  },
-
-  text: {
-    fontSize: 14,
-    color: "#333",
-    lineHeight: 20,
-  },
-
-});
-
