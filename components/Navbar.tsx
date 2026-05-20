@@ -1,5 +1,5 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { useRouter } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 import { navbarStyles } from "../styles/components/navbarstyles";
 
 export default function Navbar() {
@@ -27,13 +27,13 @@ export default function Navbar() {
       </View>
 
       <View style={navbarStyles.auth}>
-        <TouchableOpacity
+        <TouchableOpacity onPress={() => router.push("/register")}
           style={[navbarStyles.button, navbarStyles.outline]}
         >
           <Text style={navbarStyles.outlineText}>Register</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <TouchableOpacity onPress={() => router.push("/login")}
           style={[navbarStyles.button, navbarStyles.filled]}
         >
           <Text style={navbarStyles.filledText}>Login</Text>

@@ -1,43 +1,54 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { useRouter } from "expo-router";
+
 import CustomButton from "../components/ui/CustomButton";
 import InputField from "../components/ui/InputField";
+
 import { API } from "../constants/api";
-import { saveToken } from "../utils/auth";
 
-export default function Login() {
+export default function Register() {
+
   const router = useRouter();
-  const { redirectTo } = useLocalSearchParams();
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
+
     try {
-      const res = await fetch(API.login, {
+
+      const res = await fetch(API.register, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // 🔥 save token
-        await saveToken(data.token);
 
-        // 🔥 redirect logic
-        if (redirectTo) {
-          router.replace(`/${redirectTo}` as any);
-        } else {
-          router.replace("/dashboard"); // or home/dashboard
-        }
+        alert("Registration successful");
+
+        router.replace("/login");
+
       } else {
-        alert(data.error || "Login failed");
+        alert(data.error || "Registration failed");
       }
+
     } catch (err) {
       console.log(err);
       alert("Server error");
@@ -45,56 +56,63 @@ export default function Login() {
   };
 
   return (
-  <View style={styles.screen}>
 
-    <View style={styles.glowTop} />
-    <View style={styles.glowBottom} />
+    <View style={styles.screen}>
 
-    <View style={styles.card}>
+      <View style={styles.glowTop} />
+      <View style={styles.glowBottom} />
 
-      <Text style={styles.logo}>
-        ADVOC-AI
-      </Text>
+      <View style={styles.card}>
 
-      <Text style={styles.heading}>
-        Welcome Back
-      </Text>
+        <Text style={styles.logo}>
+          ADVOC-AI
+        </Text>
 
-      <Text style={styles.subtitle}>
-        Login to continue your AI legal workspace
-      </Text>
+        <Text style={styles.heading}>
+          Create Account
+        </Text>
 
-      <InputField
-        placeholder="Email Address"
-        value={email}
-        onChangeText={setEmail}
-      />
+        <Text style={styles.subtitle}>
+          Start using AI-powered legal assistance
+        </Text>
 
-      <InputField
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <View style={{ marginTop: 10 }}>
-        <CustomButton
-          title="Login"
-          onPress={handleLogin}
+        <InputField
+          placeholder="Full Name"
+          value={name}
+          onChangeText={setName}
         />
+
+        <InputField
+          placeholder="Email Address"
+          value={email}
+          onChangeText={setEmail}
+        />
+
+        <InputField
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        <View style={{ marginTop: 10 }}>
+          <CustomButton
+            title="Register"
+            onPress={handleRegister}
+          />
+        </View>
+
+        <Text
+          style={styles.loginText}
+          onPress={() => router.push("/login")}
+        >
+          Already have an account? Login
+        </Text>
+
       </View>
 
-      <Text
-        style={styles.registerText}
-        onPress={() => router.push("/register")}
-      >
-        Don't have an account? Register
-      </Text>
-
     </View>
-
-  </View>
-);
+  );
 }
 
 const styles = StyleSheet.create({
@@ -163,11 +181,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  registerText: {
+  loginText: {
     color: "#D4AF37",
     textAlign: "center",
     marginTop: 24,
     fontWeight: "600",
   },
-
 });

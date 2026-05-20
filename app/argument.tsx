@@ -19,7 +19,8 @@ export default function ArgumentGenerator() {
   const [mode, setMode] = useState<"existing" | "new">("existing");
 
   const [cases, setCases] = useState<any[]>([]);
-const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   const [input, setInput] = useState("");
 
   const [argumentsResult, setArgumentsResult] = useState("");
@@ -27,10 +28,13 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
   // FETCH CASES
   const fetchCases = async () => {
+
     try {
 
       const token = await getToken();
-      console.log("TOKEN IN FETCH CASES:", token);
+
+      console.log("TOKEN:", token);
+
       const res = await fetch(API.getCases, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,12 +43,18 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
       const data = await res.json();
 
-      if (data.success) {
-        setCases(data.cases);
-      }
+      console.log("CASES RESPONSE:", data);
+
+      // SAFE SET
+      setCases(
+        data.cases ||
+        data.summaries ||
+        data.data ||
+        []
+      );
 
     } catch (err) {
-      console.log(err);
+      console.log("FETCH CASE ERROR:", err);
     }
   };
 
@@ -53,9 +63,9 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
   }, []);
 
   // EXISTING CASE ARGUMENTS
-  async function handleGenerateFromExisting() {
+  const handleGenerateFromExisting = async () => {
 
-    if (!selectedCaseId) {
+    if (selectedIndex === null) {
       alert("Please select a case");
       return;
     }
@@ -66,6 +76,8 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
       const token = await getToken();
 
+      const selectedCase = cases[selectedIndex];
+
       const res = await fetch(API.generateArguments, {
         method: "POST",
         headers: {
@@ -73,20 +85,27 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          caseId: cases[selectedCaseId!]?.caseId,
+          caseId:
+            selectedCase?._id ||
+            selectedCase?.caseId,
         }),
       });
 
       const data = await res.json();
 
-      setArgumentsResult(data.arguments);
+      setArgumentsResult(
+        data.arguments ||
+        data.result ||
+        "No arguments generated"
+      );
 
     } catch (err) {
       console.log(err);
+      alert("Failed to generate arguments");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   // NEW CASE ARGUMENTS
   const handleGenerateFromNew = async () => {
@@ -115,10 +134,15 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
       const data = await res.json();
 
-      setArgumentsResult(data.arguments);
+      setArgumentsResult(
+        data.arguments ||
+        data.result ||
+        "No arguments generated"
+      );
 
     } catch (err) {
       console.log(err);
+      alert("Failed to generate arguments");
     } finally {
       setLoading(false);
     }
@@ -137,6 +161,10 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 
         <Text style={styles.heading}>
           AI Argument Generator
+        </Text>
+
+        <Text style={styles.subtitle}>
+          Generate powerful AI-based legal arguments
         </Text>
 
         {/* TOGGLE */}
@@ -161,7 +189,7 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
                   : styles.inactiveText
               }
             >
-              Existing Case
+              Existing Cases
             </Text>
           </TouchableOpacity>
 
@@ -193,38 +221,64 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
         {/* EXISTING CASES */}
         {mode === "existing" && (
 
-          <View style={styles.cardContainer}>
+          <View>
 
-            {cases.map((item: any, index: number) => (
+            <Text style={styles.caseCount}>
+              Total Cases: {cases.length}
+            </Text>
 
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.card,
-                 selectedCaseId === index
-                    ? styles.selectedCard
-                    : null,
-                ]}
-                onPress={() =>
-                  setSelectedCaseId(index)
-                }
-              >
+            {cases.length === 0 ? (
 
-                <Text style={styles.cardTitle}>
-                  {item.filename || `Case ${index + 1}`}
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyText}>
+                  No cases found
                 </Text>
+              </View>
 
-                <Text
-                  numberOfLines={3}
-                  style={styles.preview}
-                >
-                  {item.summary ||
-                    "AI summarized legal document"}
-                </Text>
+            ) : (
 
-              </TouchableOpacity>
+              cases.map((item: any, index: number) => {
 
-            ))}
+                const selected =
+                  selectedIndex === index;
+
+                return (
+
+                  <TouchableOpacity
+                    key={index}
+                    activeOpacity={0.9}
+                    style={[
+                      styles.card,
+                      selected
+                        ? styles.selectedCard
+                        : null,
+                    ]}
+                    onPress={() =>
+                      setSelectedIndex(index)
+                    }
+                  >
+
+                    <Text style={styles.cardTitle}>
+                      {item.title ||
+                        item.filename ||
+                        item.caseTitle ||
+                        `Case ${index + 1}`}
+                    </Text>
+
+                    <Text
+                      numberOfLines={4}
+                      style={styles.preview}
+                    >
+                      {item.summary ||
+                        item.text ||
+                        item.content ||
+                        "AI summarized legal document"}
+                    </Text>
+
+                  </TouchableOpacity>
+                );
+              })
+            )}
 
             <TouchableOpacity
               style={styles.button}
@@ -247,7 +301,7 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
         {/* NEW CASE */}
         {mode === "new" && (
 
-          <View style={styles.newCaseContainer}>
+          <View>
 
             <TextInput
               placeholder="Enter legal case details..."
@@ -302,6 +356,7 @@ const [selectedCaseId, setSelectedCaseId] = useState<number | null>(null);
 const styles = StyleSheet.create({
 
   container: {
+    flex: 1,
     padding: 20,
     backgroundColor: "#0B0F19",
     minHeight: "100%",
@@ -310,8 +365,14 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 34,
     fontWeight: "800",
-    marginBottom: 30,
     color: "#fff",
+    marginBottom: 10,
+  },
+
+  subtitle: {
+    color: "#9CA3AF",
+    fontSize: 16,
+    marginBottom: 28,
   },
 
   toggleContainer: {
@@ -319,7 +380,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     borderRadius: 16,
     padding: 6,
-    marginBottom: 24,
+    marginBottom: 28,
   },
 
   toggleBtn: {
@@ -343,46 +404,56 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  cardContainer: {
-    gap: 16,
+  caseCount: {
+    color: "#D4AF37",
+    marginBottom: 18,
+    fontWeight: "700",
+  },
+
+  emptyCard: {
+    backgroundColor: "#111827",
+    padding: 24,
+    borderRadius: 22,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  emptyText: {
+    color: "#9CA3AF",
   },
 
   card: {
-    padding: 20,
-    borderRadius: 22,
     backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 20,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.06)",
   },
 
   selectedCard: {
-    borderWidth: 2,
     borderColor: "#D4AF37",
     backgroundColor: "rgba(212,175,55,0.08)",
+    borderWidth: 2,
   },
 
   cardTitle: {
-    fontWeight: "700",
-    fontSize: 18,
     color: "#fff",
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
   },
 
   preview: {
-    fontSize: 14,
     color: "#9CA3AF",
     lineHeight: 22,
-  },
-
-  newCaseContainer: {
-    gap: 20,
+    fontSize: 14,
   },
 
   input: {
     backgroundColor: "#111827",
-    minHeight: 220,
     borderRadius: 22,
+    minHeight: 220,
     padding: 20,
     color: "#fff",
     textAlignVertical: "top",
@@ -396,6 +467,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 18,
     alignItems: "center",
+    marginTop: 20,
   },
 
   buttonText: {
@@ -422,8 +494,8 @@ const styles = StyleSheet.create({
 
   resultText: {
     color: "#D1D5DB",
-    fontSize: 16,
     lineHeight: 30,
+    fontSize: 16,
   },
 
 });

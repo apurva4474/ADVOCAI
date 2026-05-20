@@ -119,7 +119,7 @@ if (mode === "file") {
     const res = await fetch(API.uploadPdf, {
       method: "POST",
       headers: {
-        Authorization: token, // 🔥 IMPORTANT
+        Authorization: `Bearer ${token}`, // 🔥 IMPORTANT
       },
       body: formData,
     });
