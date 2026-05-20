@@ -1,13 +1,12 @@
 import { Dimensions, StyleSheet } from "react-native";
 
-import { isMobile } from "../responsive";
-
-const { height } = Dimensions.get("window");
+const screenWidth = Dimensions.get("window").width;
+const isMobile = screenWidth < 768;
 
 export const heroStyles = StyleSheet.create({
 
   hero: {
-    height: height,
+    height: Dimensions.get("window").height,
     width: "100%",
     justifyContent: "center",
   },
@@ -36,19 +35,18 @@ export const heroStyles = StyleSheet.create({
 
   textContainer: {
     flex: 1,
-    maxWidth: 700,
+    maxWidth: isMobile ? "100%" : 700,
   },
 
   badge: {
     alignSelf: "flex-start",
     backgroundColor: "rgba(212,175,55,0.12)",
     color: "#D4AF37",
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingHorizontal: isMobile ? 12 : 18,
+    paddingVertical: isMobile ? 8 : 10,
     borderRadius: 30,
     marginBottom: 28,
     fontWeight: "700",
-    overflow: "hidden",
   },
 
   title: {

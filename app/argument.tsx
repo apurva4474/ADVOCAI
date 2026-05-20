@@ -46,12 +46,7 @@ export default function ArgumentGenerator() {
       console.log("CASES RESPONSE:", data);
 
       // SAFE SET
-      setCases(
-        data.cases ||
-        data.summaries ||
-        data.data ||
-        []
-      );
+      setCases(Array.isArray(data) ? data : []);
 
     } catch (err) {
       console.log("FETCH CASE ERROR:", err);

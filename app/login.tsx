@@ -5,7 +5,7 @@ import CustomButton from "../components/ui/CustomButton";
 import InputField from "../components/ui/InputField";
 import { API } from "../constants/api";
 import { saveToken } from "../utils/auth";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function Login() {
   const router = useRouter();
   const { redirectTo } = useLocalSearchParams();
@@ -28,6 +28,10 @@ export default function Login() {
       if (res.ok) {
         // 🔥 save token
         await saveToken(data.token);
+        await AsyncStorage.setItem(
+  "username",
+  data.user.name
+);
 
         // 🔥 redirect logic
         if (redirectTo) {

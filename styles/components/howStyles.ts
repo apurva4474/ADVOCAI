@@ -1,37 +1,40 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
+
+const screenWidth = Dimensions.get("window").width;
+const isMobile = screenWidth < 768;
 
 export const howStyles = StyleSheet.create({
 
   container: {
-    marginTop: 80,
+    marginTop: isMobile ? 60 : 80,
     alignItems: "center",
   },
 
   heading: {
-    fontSize: 34,
+    fontSize: isMobile ? 28 : 34,
     fontWeight: "800",
     color: "#fff",
     marginBottom: 10,
   },
 
   subheading: {
-    fontSize: 16,
+    fontSize: isMobile ? 14 : 16,
     color: "#9CA3AF",
     marginBottom: 50,
   },
 
   steps: {
     width: "100%",
-    flexDirection: "row",
+    flexDirection: isMobile ? "column" : "row",
     justifyContent: "space-between",
-    gap: 20,
+    gap: isMobile ? 10 : 20,
   },
 
   card: {
     flex: 1,
     backgroundColor: "#111827",
     borderRadius: 24,
-    padding: 28,
+    padding: isMobile ? 20 : 28,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.06)",
