@@ -281,10 +281,17 @@ ${text}
 
       temperature: 0.2,
     });
+const response =
+  completion?.choices?.[0]?.message?.content;
 
-    const response =
-      completion.choices[0]?.message?.content
-      || "[]";
+console.log("GROQ RESPONSE:", response);
+
+if (!response) {
+
+  return res.status(500).json({
+    error: "No response from AI",
+  });
+}
 
     console.log(
       "RAW TIMELINE RESPONSE:",
@@ -320,14 +327,13 @@ ${text}
   } catch (error) {
 
     console.log(
-      "TIMELINE ERROR:",
-      error
-    );
+  "TIMELINE FULL ERROR:",
+  error
+);
 
-    res.status(500).json({
-      error:
-        "Timeline generation failed",
-    });
+res.status(500).json({
+  error: error.message,
+});
   }
 });
 app.post("/register", async (req, res) => {
