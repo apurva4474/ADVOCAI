@@ -243,7 +243,7 @@ app.get("/cases", authMiddleware, async (req, res) => {
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
-const timelineRoutes = require("./routes/timeline");
+// const timelineRoutes = require("./routes/timeline");
 
 app.post("/generate-timeline", async (req, res) => {
 
