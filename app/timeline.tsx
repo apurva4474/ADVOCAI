@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import Navbar from "../components/Navbar";
@@ -25,8 +25,8 @@ export default function Timeline() {
 
   const [cases, setCases] = useState<any[]>([]);
 
-  const [selectedCase, setSelectedCase] =
-    useState<any>(null);
+  const [selectedIndex, setSelectedIndex] =
+    useState<number | null>(null);
 
   const [text, setText] = useState("");
 
@@ -75,7 +75,9 @@ export default function Timeline() {
 
       const finalText =
         mode === "existing"
-          ? selectedCase?.summary
+
+          ? cases[selectedIndex!]?.summary
+
           : text;
 
       if (!finalText) {
@@ -216,52 +218,57 @@ export default function Timeline() {
               (
                 item: any,
                 index: number
-              ) => (
+              ) => {
 
-                <TouchableOpacity
-                  key={index}
+                const selected =
+                  selectedIndex === index;
 
-                  style={[
+                return (
 
-                    timelineStyles.card,
+                  <TouchableOpacity
+                    key={index}
 
-                    selectedCase?.caseId ===
-                    item.caseId
+                    style={[
 
-                      ? timelineStyles.selectedCard
+                      timelineStyles.card,
 
-                      : null,
-                  ]}
+                      selected
 
-                  onPress={() =>
-                    setSelectedCase(item)
-                  }
-                >
+                        ? timelineStyles.selectedCard
 
-                  <Text
-                    style={
-                      timelineStyles.cardTitle
+                        : null,
+                    ]}
+
+                    onPress={() =>
+                      setSelectedIndex(index)
                     }
                   >
-                    {item.title ||
 
-                      item.filename ||
+                    <Text
+                      style={
+                        timelineStyles.cardTitle
+                      }
+                    >
+                      {item.title ||
 
-                      `Case ${index + 1}`}
-                  </Text>
+                        item.filename ||
 
-                  <Text
-                    numberOfLines={3}
+                        `Case ${index + 1}`}
+                    </Text>
 
-                    style={
-                      timelineStyles.preview
-                    }
-                  >
-                    {item.summary}
-                  </Text>
+                    <Text
+                      numberOfLines={3}
 
-                </TouchableOpacity>
-              )
+                      style={
+                        timelineStyles.preview
+                      }
+                    >
+                      {item.summary}
+                    </Text>
+
+                  </TouchableOpacity>
+                );
+              }
             )}
 
           </View>
