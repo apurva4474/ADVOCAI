@@ -243,7 +243,9 @@ app.get("/cases", authMiddleware, async (req, res) => {
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
+const timelineRoutes = require("./routes/timeline");
 
+app.use("/timeline", timelineRoutes);
 app.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;

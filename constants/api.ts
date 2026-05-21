@@ -15,6 +15,7 @@ export const API = {
   getCases: `${BASE_URL}/cases`,
   getCaseById: `${BASE_URL}/cases`,
 generateArguments: `${BASE_URL}/generate-arguments`,
+generateTimeline: `${BASE_URL}/generate-timeline`,
 };
 
 export default API;
