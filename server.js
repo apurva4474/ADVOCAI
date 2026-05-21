@@ -243,8 +243,6 @@ app.get("/cases", authMiddleware, async (req, res) => {
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User");
-// const timelineRoutes = require("./routes/timeline");
-
 app.post("/generate-timeline", async (req, res) => {
 
   try {
@@ -254,13 +252,15 @@ app.post("/generate-timeline", async (req, res) => {
     const prompt = `
 Extract important legal events and dates.
 
-Return ONLY JSON array format:
+Return ONLY valid JSON array format.
+
+Example:
 
 [
- {
-   "date":"2021-01-12",
-   "event":"FIR registered"
- }
+  {
+    "date":"2021-01-12",
+    "event":"FIR registered"
+  }
 ]
 
 Case Text:
@@ -286,22 +286,47 @@ ${text}
       completion.choices[0]?.message?.content
       || "[]";
 
+    console.log(
+      "RAW TIMELINE RESPONSE:",
+      response
+    );
+
     const cleanJson = response
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    const timeline =
-      JSON.parse(cleanJson);
+    let timeline = [];
+
+    try {
+
+      timeline = JSON.parse(cleanJson);
+
+    } catch (parseError) {
+
+      console.log(
+        "JSON PARSE ERROR:",
+        parseError
+      );
+
+      return res.status(500).json({
+        error:
+          "AI returned invalid timeline format",
+      });
+    }
 
     res.json(timeline);
 
   } catch (error) {
 
-    console.log(error);
+    console.log(
+      "TIMELINE ERROR:",
+      error
+    );
 
     res.status(500).json({
-      error: "Timeline generation failed",
+      error:
+        "Timeline generation failed",
     });
   }
 });

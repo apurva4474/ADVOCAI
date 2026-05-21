@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
-  ActivityIndicator,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import Navbar from "../components/Navbar";
@@ -69,53 +69,58 @@ export default function Timeline() {
   // GENERATE TIMELINE
   const generateTimeline = async () => {
 
-    try {
+  try {
 
-      setLoading(true);
+    if (
+      mode === "existing" &&
+      selectedIndex === null
+    ) {
 
-      const finalText =
-        mode === "existing"
+      alert("Please select a case");
 
-          ? cases[selectedIndex!]?.summary
+      return;
+    }
 
-          : text;
+    setLoading(true);
 
-      if (!finalText) {
+    const finalText =
+      mode === "existing"
 
-        alert(
-          "Please select or enter a case"
-        );
+        ? selectedIndex !== null ? cases[selectedIndex]?.text : undefined
 
-        return;
-      }
+        : text;
 
-      const res = await axios.post(
-        API.generateTimeline,
-        {
-          text: finalText,
-        }
-      );
-
-      console.log(
-        "TIMELINE RESULT:",
-        res.data
-      );
-
-      setTimeline(res.data);
-
-    } catch (error) {
-
-      console.log(error);
+    if (!finalText) {
 
       alert(
-        "Timeline generation failed"
+        "No summary found"
       );
 
-    } finally {
-
-      setLoading(false);
+      return;
     }
-  };
+
+    const res = await axios.post(
+      API.generateTimeline,
+      {
+        text: finalText,
+      }
+    );
+
+    setTimeline(res.data);
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert(
+      "Timeline generation failed"
+    );
+
+  } finally {
+
+    setLoading(false);
+  }
+};
 
   return (
 
@@ -239,9 +244,12 @@ export default function Timeline() {
                         : null,
                     ]}
 
-                    onPress={() =>
-                      setSelectedIndex(index)
-                    }
+                    onPress={() => {
+
+  console.log("case:", item);
+
+  setSelectedIndex(index);
+}}
                   >
 
                     <Text
