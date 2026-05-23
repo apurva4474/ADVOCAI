@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Navbar from "../components/Navbar";
-import { API } from "../constants/api";
-import { getToken } from "../auth";
+// import Navbar from "../components/Navbar";
+import { API } from "../../constants/api";
+import { getToken } from "../../auth";
 
 export default function History() {
   const [data, setData] = useState<any[]>([]);
@@ -80,7 +80,7 @@ export default function History() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Navbar />
+      {/* <Navbar /> */}
 
       <View style={styles.container}>
         <Text style={styles.heading}>📂 Case History</Text>

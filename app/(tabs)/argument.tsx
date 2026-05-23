@@ -10,9 +10,9 @@ import {
   View,
 } from "react-native";
 
-import Navbar from "../components/Navbar";
-import { API } from "../constants/api";
-import { getToken } from "../utils/auth";
+// import Navbar from "../components/Navbar";
+import { API } from "../../constants/api";
+import { getToken } from "../../utils/auth";
 
 export default function ArgumentGenerator() {
 
@@ -150,7 +150,7 @@ export default function ArgumentGenerator() {
       showsVerticalScrollIndicator={false}
     >
 
-      <Navbar />
+      {/* <Navbar /> */}
 
       <View style={styles.container}>
 

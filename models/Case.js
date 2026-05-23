@@ -3,18 +3,19 @@ const mongoose = require("mongoose");
 const caseSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true
+    required: true,
   },
+
   userId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  required: true,
-},
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+
   createdAt: {
     type: Date,
-    default: Date.now
-  }
-  
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Case", caseSchema);

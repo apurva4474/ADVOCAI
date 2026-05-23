@@ -85,6 +85,36 @@ app.post("/summarize", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.get("/dashboard-stats/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const totalCases = await Case.countDocuments({
+      userId,
+    });
+
+    const totalSummaries = await Summary.countDocuments({
+      userId,
+    });
+
+    const totalArguments = await Argument.countDocuments({
+      userId,
+    });
+
+    res.json({
+      cases: totalCases,
+      summaries: totalSummaries,
+      arguments: totalArguments,
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      error: error.message,
+    });
+  }
+});
 app.get("/summaries", async (req, res) => {
   try {
     const summaries = await Summary.find().sort({ createdAt: -1 });

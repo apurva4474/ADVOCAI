@@ -1,177 +1,254 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import CustomButton from "../components/ui/CustomButton";
-import InputField from "../components/ui/InputField";
-import { API } from "../constants/api";
-import { saveToken } from "../utils/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-export default function Login() {
-  const router = useRouter();
-  const { redirectTo } = useLocalSearchParams();
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+import axios from "axios";
+import { useState } from "react";
+
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { API } from "@/constants/api";
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      const res = await fetch(API.login, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await axios.post(API.login, {
+        email,
+        password,
       });
 
-      const data = await res.json();
+      const data = response.data;
 
-      if (res.ok) {
-        // 🔥 save token
-        await saveToken(data.token);
-        await AsyncStorage.setItem(
-  "username",
-  data.user.name
-);
+      // SAVE USER DATA
 
-        // 🔥 redirect logic
-        if (redirectTo) {
-          router.replace(`/${redirectTo}` as any);
-        } else {
-          router.replace("/dashboard"); // or home/dashboard
-        }
-      } else {
-        alert(data.error || "Login failed");
-      }
-    } catch (err) {
-      console.log(err);
-      alert("Server error");
-    }
+      await AsyncStorage.setItem(
+        "username",
+        data.user.name
+      );
+
+      await AsyncStorage.setItem(
+        "userId",
+        data.user.id
+      );
+
+      await AsyncStorage.setItem(
+        "token",
+        data.token
+      );
+
+      Alert.alert("Success", "Login successful");
+
+      router.replace("/");
+    } catch (error: any) {
+  console.log("LOGIN ERROR:");
+  console.log(error.response?.data);
+
+  Alert.alert(
+    "Login Failed",
+    error?.response?.data?.error || "Something went wrong"
+  );
+}
   };
 
   return (
-  <View style={styles.screen}>
-
-    <View style={styles.glowTop} />
-    <View style={styles.glowBottom} />
-
-    <View style={styles.card}>
-
-      <Text style={styles.logo}>
-        ADVOC-AI
-      </Text>
-
-      <Text style={styles.heading}>
-        Welcome Back
-      </Text>
-
-      <Text style={styles.subtitle}>
-        Login to continue your AI legal workspace
-      </Text>
-
-      <InputField
-        placeholder="Email Address"
-        value={email}
-        onChangeText={setEmail}
-      />
-
-      <InputField
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      <View style={{ marginTop: 10 }}>
-        <CustomButton
-          title="Login"
-          onPress={handleLogin}
-        />
-      </View>
-
-      <Text
-        style={styles.registerText}
-        onPress={() => router.push("/register")}
+    <LinearGradient
+      colors={["#020617", "#111827", "#1e1b4b"]}
+      style={styles.container}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.inner}
       >
-        Don't have an account? Register
-      </Text>
+        {/* LOGO */}
 
-    </View>
+        <View style={styles.logoContainer}>
+          <View style={styles.logo}>
+            <Ionicons
+              name="shield-checkmark"
+              size={40}
+              color="white"
+            />
+          </View>
 
-  </View>
-);
+          <Text style={styles.title}>ADVOCAI</Text>
+
+          <Text style={styles.subtitle}>
+            AI-powered legal assistant
+          </Text>
+        </View>
+
+        {/* FORM */}
+
+        <View style={styles.form}>
+          <Text style={styles.label}>Email</Text>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="mail"
+              size={20}
+              color="#94a3b8"
+            />
+
+            <TextInput
+              placeholder="Enter your email"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <Text style={styles.label}>Password</Text>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed"
+              size={20}
+              color="#94a3b8"
+            />
+
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor="#64748b"
+              secureTextEntry
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          {/* LOGIN BUTTON */}
+
+          <TouchableOpacity onPress={handleLogin}>
+            <LinearGradient
+              colors={["#7c3aed", "#9333ea"]}
+              style={styles.loginButton}
+            >
+              <Text style={styles.loginText}>
+                Login
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* REGISTER */}
+
+          <TouchableOpacity
+            onPress={() => router.push("/register")}
+          >
+            <Text style={styles.registerText}>
+              Don’t have an account? Register
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
+  );
 }
 
 const styles = StyleSheet.create({
-
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: "#0B0F19",
+  },
+
+  inner: {
+    flex: 1,
     justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+
+  logoContainer: {
     alignItems: "center",
-    padding: 24,
-    overflow: "hidden",
-  },
-
-  glowTop: {
-    position: "absolute",
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: "rgba(212,175,55,0.18)",
-    top: -80,
-    left: -60,
-  },
-
-  glowBottom: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    bottom: -80,
-    right: -40,
-  },
-
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#111827",
-    padding: 30,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
+    marginBottom: 60,
   },
 
   logo: {
-    fontSize: 34,
-    fontWeight: "900",
-    color: "#D4AF37",
-    textAlign: "center",
-    marginBottom: 12,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(139,92,246,0.25)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  title: {
+    fontSize: 38,
+    fontWeight: "bold",
+    color: "white",
     letterSpacing: 1,
   },
 
-  heading: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-
   subtitle: {
-    color: "#9CA3AF",
-    textAlign: "center",
-    marginBottom: 32,
-    lineHeight: 24,
+    color: "#cbd5e1",
+    marginTop: 10,
     fontSize: 15,
   },
 
-  registerText: {
-    color: "#D4AF37",
-    textAlign: "center",
-    marginTop: 24,
+  form: {
+    backgroundColor: "rgba(15,23,42,0.8)",
+    borderRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+
+  label: {
+    color: "white",
+    marginBottom: 10,
+    fontSize: 15,
     fontWeight: "600",
   },
 
+  inputContainer: {
+    backgroundColor: "#0f172a",
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+
+  input: {
+    flex: 1,
+    color: "white",
+    paddingVertical: 16,
+    marginLeft: 10,
+    fontSize: 15,
+  },
+
+  loginButton: {
+    paddingVertical: 18,
+    borderRadius: 18,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  loginText: {
+    color: "white",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+
+  registerText: {
+    color: "#c4b5fd",
+    textAlign: "center",
+    marginTop: 24,
+    fontSize: 15,
+  },
 });

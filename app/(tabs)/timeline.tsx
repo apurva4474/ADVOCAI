@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import Navbar from "../components/Navbar";
+// import Navbar from "../../components/Navbar";
 
-import { API } from "../constants/api";
+import { API } from "../../constants/api";
 
-import { timelineStyles } from "../styles/timelineStyles";
+import { timelineStyles } from "../../styles/timelineStyles";
 
 export default function Timeline() {
 
@@ -129,8 +129,8 @@ export default function Timeline() {
 
       showsVerticalScrollIndicator={false}
     >
-
-      <Navbar />
+{/*  */}
+      {/* <Navbar /> */}
 
       <View style={timelineStyles.container}>
 

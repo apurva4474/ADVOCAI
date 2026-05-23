@@ -1,190 +1,253 @@
-import { useState } from "react";
-
 import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
+  TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
-import { useRouter } from "expo-router";
+import axios from "axios";
+import { useState } from "react";
 
-import CustomButton from "../components/ui/CustomButton";
-import InputField from "../components/ui/InputField";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 
-import { API } from "../constants/api";
+import { API } from "@/constants/api";
 
-export default function Register() {
-
-  const router = useRouter();
-
+export default function RegisterScreen() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleRegister = async () => {
-
     try {
-
-      const res = await fetch(API.register, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
+      await axios.post(API.register, {
+        name,
+        email,
+        password,
       });
 
-      const data = await res.json();
+      Alert.alert(
+        "Success",
+        "Account created successfully"
+      );
 
-      if (res.ok) {
+      router.push("/login");
+    } catch (error: any) {
+      console.log(error);
 
-        alert("Registration successful");
-
-        router.replace("/login");
-
-      } else {
-        alert(data.error || "Registration failed");
-      }
-
-    } catch (err) {
-      console.log(err);
-      alert("Server error");
+      Alert.alert(
+        "Registration Failed",
+        error?.response?.data?.error || "Something went wrong"
+      );
     }
   };
 
   return (
+    <LinearGradient
+      colors={["#020617", "#111827", "#1e1b4b"]}
+      style={styles.container}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.inner}
+      >
+        <View style={styles.logoContainer}>
+          <View style={styles.logo}>
+            <Ionicons
+              name="person-add"
+              size={40}
+              color="white"
+            />
+          </View>
 
-    <View style={styles.screen}>
+          <Text style={styles.title}>
+            Create Account
+          </Text>
 
-      <View style={styles.glowTop} />
-      <View style={styles.glowBottom} />
-
-      <View style={styles.card}>
-
-        <Text style={styles.logo}>
-          ADVOC-AI
-        </Text>
-
-        <Text style={styles.heading}>
-          Create Account
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Start using AI-powered legal assistance
-        </Text>
-
-        <InputField
-          placeholder="Full Name"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <InputField
-          placeholder="Email Address"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <InputField
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-
-        <View style={{ marginTop: 10 }}>
-          <CustomButton
-            title="Register"
-            onPress={handleRegister}
-          />
+          <Text style={styles.subtitle}>
+            Join ADVOCAI today
+          </Text>
         </View>
 
-        <Text
-          style={styles.loginText}
-          onPress={() => router.push("/login")}
-        >
-          Already have an account? Login
-        </Text>
+        <View style={styles.form}>
+          <Text style={styles.label}>
+            Full Name
+          </Text>
 
-      </View>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="person"
+              size={20}
+              color="#94a3b8"
+            />
 
-    </View>
+            <TextInput
+              placeholder="Enter your name"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+
+          <Text style={styles.label}>Email</Text>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="mail"
+              size={20}
+              color="#94a3b8"
+            />
+
+            <TextInput
+              placeholder="Enter your email"
+              placeholderTextColor="#64748b"
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <Text style={styles.label}>
+            Password
+          </Text>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="lock-closed"
+              size={20}
+              color="#94a3b8"
+            />
+
+            <TextInput
+              placeholder="Create password"
+              placeholderTextColor="#64748b"
+              secureTextEntry
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+
+          <TouchableOpacity
+            onPress={handleRegister}
+          >
+            <LinearGradient
+              colors={["#7c3aed", "#9333ea"]}
+              style={styles.registerButton}
+            >
+              <Text style={styles.registerButtonText}>
+                Register
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/login")}
+          >
+            <Text style={styles.loginText}>
+              Already have an account? Login
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: "#0B0F19",
+  },
+
+  inner: {
+    flex: 1,
     justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+
+  logoContainer: {
     alignItems: "center",
-    padding: 24,
-    overflow: "hidden",
-  },
-
-  glowTop: {
-    position: "absolute",
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: "rgba(212,175,55,0.18)",
-    top: -80,
-    left: -60,
-  },
-
-  glowBottom: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    bottom: -80,
-    right: -40,
-  },
-
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    backgroundColor: "#111827",
-    padding: 30,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
+    marginBottom: 50,
   },
 
   logo: {
-    fontSize: 34,
-    fontWeight: "900",
-    color: "#D4AF37",
-    textAlign: "center",
-    marginBottom: 12,
-    letterSpacing: 1,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(139,92,246,0.25)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
   },
 
-  heading: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 10,
+  title: {
+    fontSize: 34,
+    fontWeight: "bold",
+    color: "white",
   },
 
   subtitle: {
-    color: "#9CA3AF",
-    textAlign: "center",
-    marginBottom: 32,
-    lineHeight: 24,
+    color: "#cbd5e1",
+    marginTop: 10,
+  },
+
+  form: {
+    backgroundColor: "rgba(15,23,42,0.8)",
+    borderRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+
+  label: {
+    color: "white",
+    marginBottom: 10,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+
+  inputContainer: {
+    backgroundColor: "#0f172a",
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 22,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+  },
+
+  input: {
+    flex: 1,
+    color: "white",
+    paddingVertical: 16,
+    marginLeft: 10,
     fontSize: 15,
   },
 
+  registerButton: {
+    paddingVertical: 18,
+    borderRadius: 18,
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  registerButtonText: {
+    color: "white",
+    fontSize: 17,
+    fontWeight: "bold",
+  },
+
   loginText: {
-    color: "#D4AF37",
+    color: "#c4b5fd",
     textAlign: "center",
     marginTop: 24,
-    fontWeight: "600",
+    fontSize: 15,
   },
 });

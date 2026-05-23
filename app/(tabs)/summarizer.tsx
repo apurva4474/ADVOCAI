@@ -13,9 +13,9 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import Navbar from "../components/Navbar";
-import { API } from "../constants/api";
-import { getToken } from "../utils/auth";
+// import Navbar from "../../components/Navbar";
+import { API } from "../../constants/api";
+import { getToken } from "../../utils/auth";
 export default function Summarizer() {
   const navigation = useNavigation<any>();
   const [text, setText] = useState("");
@@ -151,7 +151,7 @@ if (mode === "file") {
     showsVerticalScrollIndicator={false}
   >
 
-    <Navbar />
+    {/* <Navbar /> */}
 
     <View style={styles.container}>
 
