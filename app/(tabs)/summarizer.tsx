@@ -20,7 +20,7 @@ export default function Summarizer() {
   const navigation = useNavigation<any>();
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"text" | "file">("text");
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<any>(null);
@@ -268,20 +268,106 @@ if (mode === "file") {
       </View>
 
       {/* RESULT */}
-      {summary ? (
-        <View style={styles.resultCard}>
+{summary ? (
+  <View style={styles.resultCard}>
 
-          <Text style={styles.resultTitle}>
-            📑 AI Summary Result
-          </Text>
+    <Text style={styles.resultTitle}>
+      ⚖️ AI Legal Analysis
+    </Text>
 
-          <Text style={styles.resultText}>
-            {summary}
-          </Text>
+    {/* FACTS */}
 
-        </View>
-      ) : null}
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        📌 Key Facts
+      </Text>
 
+      {summary?.facts?.map(
+        (fact: string, index: number) => (
+          <View
+            key={index}
+            style={styles.factCard}
+          >
+            <Text style={styles.factText}>
+              • {fact}
+            </Text>
+          </View>
+        )
+      )}
+    </View>
+
+    {/* ISSUES */}
+
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        ⚠️ Legal Issues
+      </Text>
+
+      <View style={styles.issueContainer}>
+        {summary?.issues?.map(
+          (
+            issue: string,
+            index: number
+          ) => (
+            <View
+              key={index}
+              style={styles.issueChip}
+            >
+              <Text
+                style={styles.issueText}
+              >
+                {issue}
+              </Text>
+            </View>
+          )
+        )}
+      </View>
+    </View>
+
+    {/* JUDGEMENT */}
+
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        🧑‍⚖️ Judgement
+      </Text>
+
+      <View style={styles.judgementCard}>
+        <Text
+          style={styles.judgementText}
+        >
+          {summary?.judgement}
+        </Text>
+      </View>
+    </View>
+
+    {/* LEGAL PRINCIPLES */}
+
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>
+        📚 Legal Principles
+      </Text>
+
+      {summary?.legalPrinciples?.map(
+        (
+          principle: string,
+          index: number
+        ) => (
+          <View
+            key={index}
+            style={styles.principleCard}
+          >
+            <Text
+              style={styles.principleText}
+            >
+              {principle}
+            </Text>
+          </View>
+        )
+      )}
+    </View>
+
+  </View>
+) : null}
     </View>
 
   </ScrollView>
@@ -291,39 +377,39 @@ if (mode === "file") {
 const styles = StyleSheet.create({
 
   container: {
-    flex: 1,
-    padding: 24,
+    
+
+  flex: 1,
+  paddingHorizontal: 18,
+  paddingTop: 10,
     alignItems: "center",
     backgroundColor: "#0B0F19",
     paddingBottom: 60,
   },
 
   hero: {
-    alignItems: "center",
-    marginTop: 50,
-    marginBottom: 40,
-    maxWidth: 900,
-  },
+  width: "100%",
+  marginTop: 25,
+  marginBottom: 28,
+},
 
   heading: {
-    fontSize: 42,
+    fontSize: 34,
     fontWeight: "800",
     color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 16,
   },
 
-  subheading: {
-    fontSize: 17,
-    color: "#9CA3AF",
-    textAlign: "center",
-    lineHeight: 28,
-    maxWidth: 700,
-  },
+subheading: {
+  fontSize: 15,
+  color: "#94A3B8",
+  lineHeight: 24,
+  marginTop: 10,
+},
 
   card: {
     width: "100%",
-    maxWidth: 950,
     backgroundColor: "#111827",
     borderRadius: 28,
     padding: 30,
@@ -375,7 +461,7 @@ const styles = StyleSheet.create({
   },
 
   uploadBox: {
-    minHeight: 240,
+    minHeight: 200,
     borderRadius: 24,
     borderWidth: 2,
     borderStyle: "dashed",
@@ -384,6 +470,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#0F172A",
     padding: 30,
+    shadowColor: "#D4AF37",
+shadowOffset: {
+  width: 0,
+  height: 0,
+},
+shadowOpacity: 0.25,
+shadowRadius: 18,
+elevation: 8,
   },
 
   uploadIcon: {
@@ -405,7 +499,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    marginTop: 28,
+    marginTop: 22,
     backgroundColor: "#D4AF37",
     paddingVertical: 18,
     borderRadius: 18,
@@ -420,7 +514,6 @@ const styles = StyleSheet.create({
 
   resultCard: {
     width: "100%",
-    maxWidth: 950,
     marginTop: 35,
     backgroundColor: "#111827",
     borderRadius: 28,
@@ -430,7 +523,7 @@ const styles = StyleSheet.create({
   },
 
   resultTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
     color: "#fff",
     marginBottom: 20,
@@ -441,5 +534,78 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 30,
   },
+  section: {
+  marginTop: 28,
+},
+
+sectionTitle: {
+  fontSize: 20,
+  fontWeight: "700",
+  color: "#fff",
+  marginBottom: 18,
+},
+
+factCard: {
+  backgroundColor: "#0F172A",
+  padding: 18,
+  borderRadius: 18,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.05)",
+},
+
+factText: {
+  color: "#E5E7EB",
+  fontSize: 15,
+  lineHeight: 24,
+},
+
+issueContainer: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+},
+
+issueChip: {
+  backgroundColor: "#312E81",
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 999,
+  marginRight: 10,
+  marginBottom: 10,
+},
+
+issueText: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
+judgementCard: {
+  backgroundColor: "#1E293B",
+  borderLeftWidth: 5,
+  borderLeftColor: "#D4AF37",
+  padding: 22,
+  borderRadius: 18,
+},
+
+judgementText: {
+  color: "#F9FAFB",
+  fontSize: 16,
+  lineHeight: 30,
+},
+
+principleCard: {
+  backgroundColor: "#111827",
+  padding: 18,
+  borderRadius: 18,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "rgba(212,175,55,0.3)",
+},
+
+principleText: {
+  color: "#F3F4F6",
+  lineHeight: 26,
+  fontSize: 15,
+},
 
 });

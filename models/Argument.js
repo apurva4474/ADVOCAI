@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const timelineSchema = new mongoose.Schema({
+const argumentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -13,7 +13,7 @@ const timelineSchema = new mongoose.Schema({
     required: true,
   },
 
-  timelineData: {
+  argumentsData: {
     type: String,
     required: true,
   },
@@ -25,5 +25,5 @@ const timelineSchema = new mongoose.Schema({
 });
 
 module.exports =
-  mongoose.models.Timeline ||
-  mongoose.model("Timeline", timelineSchema);
+  mongoose.models.Argument ||
+  mongoose.model("Argument", argumentSchema);

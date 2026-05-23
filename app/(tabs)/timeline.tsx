@@ -1,34 +1,23 @@
-import { useEffect, useState } from "react";
 
 import axios from "axios";
-
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
+  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
-// import Navbar from "../../components/Navbar";
-
 import { API } from "../../constants/api";
+import { getToken } from "../../utils/auth";
 
-import { timelineStyles } from "../../styles/timelineStyles";
-
-export default function Timeline() {
-
-  const [mode, setMode] = useState<
-    "existing" | "new"
-  >("existing");
+export default function TimelineScreen() {
 
   const [cases, setCases] = useState<any[]>([]);
-
   const [selectedIndex, setSelectedIndex] =
     useState<number | null>(null);
-
-  const [text, setText] = useState("");
 
   const [timeline, setTimeline] =
     useState<any[]>([]);
@@ -36,18 +25,25 @@ export default function Timeline() {
   const [loading, setLoading] =
     useState(false);
 
-  // FETCH CASES
+  useEffect(() => {
+    fetchCases();
+  }, []);
+
   const fetchCases = async () => {
 
     try {
 
-      const res = await axios.get(
-        API.getSummaries
-      );
+      const token =
+        await getToken();
 
-      console.log(
-        "TIMELINE CASES:",
-        res.data
+      const res = await axios.get(
+        API.getCases,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
       );
 
       setCases(
@@ -62,271 +58,182 @@ export default function Timeline() {
     }
   };
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
-  // GENERATE TIMELINE
   const generateTimeline = async () => {
 
-  try {
+    try {
 
-    if (
-      mode === "existing" &&
-      selectedIndex === null
-    ) {
+      if (selectedIndex === null) {
 
-      alert("Please select a case");
+        alert("Please select a case");
 
-      return;
-    }
+        return;
+      }
 
-    setLoading(true);
+      setLoading(true);
 
-    const finalText =
-      mode === "existing"
+      const token =
+        await getToken();
 
-        ? selectedIndex !== null ? cases[selectedIndex]?.text : undefined
+      const selectedCase =
+        cases[selectedIndex];
 
-        : text;
+      const res = await axios.post(
+        API.generateTimeline,
 
-    if (!finalText) {
+        {
+          caseId:
+            selectedCase.caseId,
+        },
 
-      alert(
-        "No summary found"
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
       );
 
-      return;
+      setTimeline(
+        res.data.timeline
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Timeline generation failed"
+      );
+
+    } finally {
+
+      setLoading(false);
     }
-
-    const res = await axios.post(
-      API.generateTimeline,
-      {
-        text: finalText,
-      }
-    );
-
-    setTimeline(res.data);
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert(
-      "Timeline generation failed"
-    );
-
-  } finally {
-
-    setLoading(false);
-  }
-};
+  };
 
   return (
 
     <ScrollView
-      style={timelineStyles.screen}
-
+      style={{
+        flex: 1,
+        backgroundColor: "#020617",
+      }}
       showsVerticalScrollIndicator={false}
     >
-{/*  */}
-      {/* <Navbar /> */}
 
       <View style={timelineStyles.container}>
 
-        <Text style={timelineStyles.heading}>
-          AI Timeline Builder
-        </Text>
+        {/* HERO */}
 
-        <Text style={timelineStyles.subheading}>
-          Generate chronological legal
-          timelines instantly using AI.
-        </Text>
+        <View style={timelineStyles.hero}>
 
-        {/* TOGGLE */}
-        <View
-          style={
-            timelineStyles.toggleContainer
-          }
-        >
+          <Text style={timelineStyles.heading}>
+            Legal Case Timeline
+          </Text>
 
-          <TouchableOpacity
-            style={[
-              timelineStyles.toggleButton,
+          <Text style={timelineStyles.subheading}>
+            Generate chronological legal
+            events and case progress
+            instantly using AI-powered
+            analysis.
+          </Text>
 
-              mode === "existing"
-                ? timelineStyles.activeButton
-                : null,
-            ]}
+        </View>
 
-            onPress={() =>
-              setMode("existing")
-            }
-          >
+        {/* CARD */}
 
-            <Text
-              style={
-                mode === "existing"
+        <View style={timelineStyles.card}>
 
-                  ? timelineStyles.activeText
+          <Text style={timelineStyles.sectionTitle}>
+            Select Case
+          </Text>
 
-                  : timelineStyles.inactiveText
-              }
-            >
-              Existing Case
+          {cases.length === 0 ? (
+
+            <Text style={timelineStyles.emptyText}>
+              No summarized cases found
             </Text>
 
-          </TouchableOpacity>
+          ) : (
+
+            cases.map(
+              (item, index) => (
+
+                <TouchableOpacity
+                  key={index}
+
+                  activeOpacity={0.85}
+
+                  onPress={() =>
+                    setSelectedIndex(index)
+                  }
+
+                  style={[
+                    timelineStyles.caseCard,
+
+                    selectedIndex === index
+                      ? timelineStyles.selectedCard
+                      : null,
+                  ]}
+                >
+
+                  <Text
+                    style={
+                      timelineStyles.cardTitle
+                    }
+                  >
+                    {item.title}
+                  </Text>
+
+                  <Text
+                    numberOfLines={3}
+
+                    style={
+                      timelineStyles.preview
+                    }
+                  >
+                    {item?.summary?.facts?.[0] ||
+
+                      "AI analyzed legal case"}
+                  </Text>
+
+                </TouchableOpacity>
+              )
+            )
+          )}
+
+          {/* BUTTON */}
 
           <TouchableOpacity
-            style={[
-              timelineStyles.toggleButton,
+            style={timelineStyles.button}
 
-              mode === "new"
+            activeOpacity={0.85}
 
-                ? timelineStyles.activeButton
-
-                : null,
-            ]}
-
-            onPress={() =>
-              setMode("new")
-            }
+            onPress={generateTimeline}
           >
 
-            <Text
-              style={
-                mode === "new"
+            {loading ? (
 
-                  ? timelineStyles.activeText
+              <ActivityIndicator color="#000" />
 
-                  : timelineStyles.inactiveText
-              }
-            >
-              New Case
-            </Text>
+            ) : (
+
+              <Text
+                style={
+                  timelineStyles.buttonText
+                }
+              >
+                Generate Legal Timeline
+              </Text>
+
+            )}
 
           </TouchableOpacity>
 
         </View>
 
-        {/* EXISTING CASES */}
-        {mode === "existing" ? (
-
-          <View
-            style={
-              timelineStyles.cardContainer
-            }
-          >
-
-            {cases.map(
-              (
-                item: any,
-                index: number
-              ) => {
-
-                const selected =
-                  selectedIndex === index;
-
-                return (
-
-                  <TouchableOpacity
-                    key={index}
-
-                    style={[
-
-                      timelineStyles.card,
-
-                      selected
-
-                        ? timelineStyles.selectedCard
-
-                        : null,
-                    ]}
-
-                    onPress={() => {
-
-  console.log("case:", item);
-
-  setSelectedIndex(index);
-}}
-                  >
-
-                    <Text
-                      style={
-                        timelineStyles.cardTitle
-                      }
-                    >
-                      {item.title ||
-
-                        item.filename ||
-
-                        `Case ${index + 1}`}
-                    </Text>
-
-                    <Text
-                      numberOfLines={3}
-
-                      style={
-                        timelineStyles.preview
-                      }
-                    >
-                      {item.summary}
-                    </Text>
-
-                  </TouchableOpacity>
-                );
-              }
-            )}
-
-          </View>
-
-        ) : (
-
-          <TextInput
-            style={timelineStyles.input}
-
-            multiline
-
-            placeholder="Paste legal case details..."
-
-            placeholderTextColor="#6B7280"
-
-            value={text}
-
-            onChangeText={setText}
-          />
-
-        )}
-
-        {/* BUTTON */}
-        <TouchableOpacity
-          style={timelineStyles.button}
-
-          onPress={generateTimeline}
-        >
-
-          {loading ? (
-
-            <ActivityIndicator
-              color="#000"
-            />
-
-          ) : (
-
-            <Text
-              style={
-                timelineStyles.buttonText
-              }
-            >
-              Generate Timeline
-            </Text>
-
-          )}
-
-        </TouchableOpacity>
-
         {/* RESULT */}
+
         {timeline.length > 0 && (
 
           <View
@@ -334,14 +241,6 @@ export default function Timeline() {
               timelineStyles.timelineContainer
             }
           >
-
-            <Text
-              style={
-                timelineStyles.timelineHeading
-              }
-            >
-              Timeline Result
-            </Text>
 
             {timeline.map(
               (
@@ -353,25 +252,48 @@ export default function Timeline() {
                   key={index}
 
                   style={
-                    timelineStyles.timelineCard
+                    timelineStyles.timelineItem
                   }
                 >
 
-                  <View
-                    style={
-                      timelineStyles.circle
-                    }
-                  />
+                  {/* LEFT */}
 
                   <View
                     style={
-                      timelineStyles.timelineContent
+                      timelineStyles.timelineLeft
+                    }
+                  >
+
+                    <View
+                      style={
+                        timelineStyles.dot
+                      }
+                    />
+
+                    {index !==
+                      timeline.length - 1 && (
+
+                      <View
+                        style={
+                          timelineStyles.line
+                        }
+                      />
+
+                    )}
+
+                  </View>
+
+                  {/* CARD */}
+
+                  <View
+                    style={
+                      timelineStyles.timelineCard
                     }
                   >
 
                     <Text
                       style={
-                        timelineStyles.date
+                        timelineStyles.timelineDate
                       }
                     >
                       {item.date}
@@ -379,7 +301,7 @@ export default function Timeline() {
 
                     <Text
                       style={
-                        timelineStyles.event
+                        timelineStyles.timelineEvent
                       }
                     >
                       {item.event}
@@ -400,3 +322,171 @@ export default function Timeline() {
     </ScrollView>
   );
 }
+
+const timelineStyles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: "#020617",
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 50,
+  },
+
+  hero: {
+    marginTop: 20,
+    marginBottom: 28,
+  },
+
+  heading: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 12,
+  },
+
+  subheading: {
+    fontSize: 15,
+    color: "#94A3B8",
+    lineHeight: 24,
+  },
+
+  card: {
+    backgroundColor: "#111827",
+    borderRadius: 28,
+    padding: 22,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+
+    elevation: 8,
+  },
+
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 18,
+  },
+
+  caseCard: {
+    backgroundColor: "#0F172A",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.04)",
+  },
+
+  selectedCard: {
+    borderWidth: 2,
+    borderColor: "#D4AF37",
+  },
+
+  cardTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+
+  preview: {
+    color: "#CBD5E1",
+    lineHeight: 22,
+    fontSize: 14,
+  },
+
+  button: {
+    marginTop: 24,
+    backgroundColor: "#D4AF37",
+    paddingVertical: 18,
+    borderRadius: 18,
+    alignItems: "center",
+
+    shadowColor: "#D4AF37",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+
+    elevation: 8,
+  },
+
+  buttonText: {
+    color: "#000",
+    fontWeight: "800",
+    fontSize: 16,
+  },
+
+  timelineContainer: {
+    marginTop: 32,
+  },
+
+  timelineItem: {
+    flexDirection: "row",
+    marginBottom: 28,
+  },
+
+  timelineLeft: {
+    alignItems: "center",
+    marginRight: 16,
+  },
+
+  dot: {
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    backgroundColor: "#D4AF37",
+  },
+
+  line: {
+    width: 2,
+    flex: 1,
+    backgroundColor:
+      "rgba(255,255,255,0.1)",
+    marginTop: 4,
+  },
+
+  timelineCard: {
+    flex: 1,
+    backgroundColor: "#111827",
+    padding: 18,
+    borderRadius: 20,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+
+  timelineDate: {
+    color: "#D4AF37",
+    fontWeight: "700",
+    marginBottom: 10,
+    fontSize: 14,
+  },
+
+  timelineEvent: {
+    color: "#E5E7EB",
+    lineHeight: 24,
+    fontSize: 15,
+  },
+
+  emptyText: {
+    color: "#94A3B8",
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 15,
+  },
+
+});
+

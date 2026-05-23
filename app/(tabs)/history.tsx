@@ -55,28 +55,53 @@ export default function History() {
     fetchCases();
   }, []);
 
-  const renderItem = ({ item }: any) => (
+ const renderItem = ({ item }: any) => {
+
+  const facts =
+    item?.summary?.facts[0] || [];
+
+  return (
     <TouchableOpacity
       style={styles.card}
       onPress={() =>
-        navigation.navigate("CaseDetails", {
-          caseId: item.caseId,
-        })
+        navigation.navigate(
+          "CaseDetails",
+          {
+            caseId: item.caseId,
+          }
+        )
       }
+      activeOpacity={0.85}
     >
+
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>
+          AI ANALYZED
+        </Text>
+      </View>
+
       <Text style={styles.title}>
         {item.title || "Untitled Case"}
       </Text>
 
-      <Text numberOfLines={3} style={styles.preview}>
-        {item.summary || "No summary available"}
+      <Text
+        numberOfLines={3}
+        style={styles.preview}
+      >
+        {facts.length > 0
+          ? facts[0]
+          : "No summary available"}
       </Text>
 
       <Text style={styles.date}>
-        {new Date(item.createdAt).toLocaleString()}
+        {new Date(
+          item.createdAt
+        ).toLocaleString()}
       </Text>
+
     </TouchableOpacity>
   );
+};
 
   return (
     <View style={{ flex: 1 }}>
@@ -93,8 +118,7 @@ export default function History() {
             keyExtractor={(item) => item.caseId}
             renderItem={renderItem}
             ListEmptyComponent={
-              <Text style={{ textAlign: "center", marginTop: 20 }}>
-                No cases found
+<Text style={styles.emptyText}>                No cases found
               </Text>
             }
           />
@@ -105,32 +129,80 @@ export default function History() {
 }
 
 const styles = StyleSheet.create({
+
   container: {
-    padding: 20,
     flex: 1,
+    backgroundColor: "#020617",
+    paddingHorizontal: 18,
+    paddingTop: 20,
   },
+
   heading: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 15,
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 24,
   },
+
   card: {
-    backgroundColor: "#f5f5f5",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: "#111827",
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 18,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+
+    elevation: 7,
   },
+
   title: {
-    fontWeight: "bold",
-    marginBottom: 5,
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 14,
+  },
+
+  preview: {
+    color: "#CBD5E1",
+    lineHeight: 24,
+    fontSize: 15,
+    marginBottom: 16,
+  },
+
+  date: {
+    color: "#94A3B8",
+    fontSize: 12,
+  },
+
+  badge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#312E81",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    marginBottom: 14,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 12,
+  },
+
+  emptyText: {
+    color: "#94A3B8",
+    textAlign: "center",
+    marginTop: 50,
     fontSize: 16,
   },
-  preview: {
-    color: "#444",
-    marginBottom: 5,
-  },
-  date: {
-    fontSize: 12,
-    color: "#888",
-  },
+
 });

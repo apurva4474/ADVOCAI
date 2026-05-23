@@ -1,254 +1,533 @@
+
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
+
 import axios from "axios";
+
 import { API } from "@/constants/api";
+
 import { Ionicons } from "@expo/vector-icons";
+
 import { LinearGradient } from "expo-linear-gradient";
+
 import { router } from "expo-router";
-import { useState,useEffect } from "react";
+
+import { useEffect, useState } from "react";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 export default function HomeScreen() {
-  const [username, setUsername] = useState("");
-const [stats, setStats] = useState({
-  cases: 0,
-  summaries: 0,
-  arguments: 0,
-});
-const loadDashboardStats = async () => {
-  try {
-    const userId = await AsyncStorage.getItem("userId");
 
-    const response = await axios.get(
-      `${API.dashboardStats}/${userId}`
-    );
+  const [username, setUsername] =
+    useState("");
 
-    setStats(response.data);
+  const [stats, setStats] = useState({
+    cases: 0,
+    summaries: 0,
+    arguments: 0,
+  });
 
-  } catch (error) {
-    console.log(error);
-  }
-};
-const loadUser = async () => {
-  const name = await AsyncStorage.getItem("username");
+  const [recentCases, setRecentCases] =
+    useState<any[]>([]);
 
-  if (name) {
-    setUsername(name);
-  }
-};
+  const loadDashboardStats =
+    async () => {
 
-useEffect(() => {
-  loadUser();
-  loadDashboardStats();
+      try {
 
-}, []);
+        const token =
+          await AsyncStorage.getItem(
+            "token"
+          );
+
+        const response =
+          await axios.get(
+            API.dashboardStats,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        setStats(response.data);
+
+      } catch (error) {
+
+        console.log(error);
+      }
+    };
+
+  const loadUser = async () => {
+
+    const name =
+      await AsyncStorage.getItem(
+        "username"
+      );
+
+    if (name) {
+      setUsername(name);
+    }
+  };
+
+  const loadRecentCases =
+    async () => {
+
+      try {
+
+        const token =
+          await AsyncStorage.getItem(
+            "token"
+          );
+
+        const response =
+          await axios.get(
+            API.getCases,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        setRecentCases(
+          response.data.slice(0, 5)
+        );
+
+      } catch (error) {
+
+        console.log(error);
+      }
+    };
+
+  useEffect(() => {
+
+    loadUser();
+
+    loadDashboardStats();
+
+    loadRecentCases();
+
+  }, []);
 
   return (
-  
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HERO SECTION */}
+
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+
+      {/* HERO */}
 
       <LinearGradient
-        colors={["#312e81", "#6d28d9", "#9333ea"]}
+        colors={[
+          "#312E81",
+          "#6D28D9",
+          "#9333EA",
+        ]}
         style={styles.hero}
       >
-        <View style={styles.heroTop}>
-          <View>
-            <Text style={styles.greeting}>Hello,</Text>
 
-            <Text style={styles.username}>{username}</Text>
+        <View style={styles.heroTop}>
+
+          <View>
+
+            <Text style={styles.greeting}>
+              Welcome Back 👋
+            </Text>
+
+            <Text style={styles.username}>
+              {username || "Advocate"}
+            </Text>
+
           </View>
 
           <View style={styles.aiIcon}>
-            <Ionicons name="sparkles" size={28} color="white" />
+
+            <Ionicons
+              name="sparkles"
+              size={30}
+              color="white"
+            />
+
           </View>
+
         </View>
 
         <Text style={styles.heroText}>
-          AI-powered legal research assistant for smarter case analysis.
+          AI-powered legal workspace
+          for smarter case analysis,
+          timelines, and arguments.
         </Text>
+
       </LinearGradient>
 
       {/* STATS */}
 
       <View style={styles.statsContainer}>
+
         <View style={styles.statCard}>
-          <Ionicons name="folder-open" size={24} color="#8b5cf6" />
-          <Text style={styles.statNumber}>{stats.cases}</Text>
-          <Text style={styles.statLabel}>Cases</Text>
+
+          <Ionicons
+            name="folder-open"
+            size={26}
+            color="#A78BFA"
+          />
+
+          <Text style={styles.statNumber}>
+            {stats.cases}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Cases
+          </Text>
+
         </View>
 
         <View style={styles.statCard}>
-          <Ionicons name="document-text" size={24} color="#8b5cf6" />
-          <Text style={styles.statNumber}>{stats.summaries}</Text>
-          <Text style={styles.statLabel}>Summaries</Text>
+
+          <Ionicons
+            name="document-text"
+            size={26}
+            color="#A78BFA"
+          />
+
+          <Text style={styles.statNumber}>
+            {stats.summaries}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Summaries
+          </Text>
+
         </View>
 
         <View style={styles.statCard}>
-          <Ionicons name="chatbox-ellipses" size={24} color="#8b5cf6" />
-          <Text style={styles.statNumber}>{stats.arguments}</Text>
-          <Text style={styles.statLabel}>Arguments</Text>
+
+          <Ionicons
+            name="chatbox-ellipses"
+            size={26}
+            color="#A78BFA"
+          />
+
+          <Text style={styles.statNumber}>
+            {stats.arguments}
+          </Text>
+
+          <Text style={styles.statLabel}>
+            Arguments
+          </Text>
+
         </View>
+
       </View>
 
-      {/* FEATURES */}
+      {/* QUICK ACTIONS */}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Features</Text>
+
+        <Text style={styles.sectionTitle}>
+          Quick Actions
+        </Text>
 
         <View style={styles.grid}>
+
           <TouchableOpacity
             style={styles.featureCard}
-            onPress={() => router.push("/summarizer")}
+
+            activeOpacity={0.85}
+
+            onPress={() =>
+              router.push("/summarizer")
+            }
           >
+
             <LinearGradient
-              colors={["#1e1b4b", "#312e81"]}
+              colors={[
+                "#1E1B4B",
+                "#312E81",
+              ]}
+
               style={styles.gradientCard}
             >
+
               <Ionicons
                 name="document-text"
-                size={32}
-                color="#c4b5fd"
+                size={34}
+                color="#C4B5FD"
               />
 
-              <Text style={styles.featureTitle}>Summarizer</Text>
-
-              <Text style={styles.featureText}>
-                Generate legal summaries instantly
+              <Text
+                style={styles.featureTitle}
+              >
+                Summarizer
               </Text>
+
+              <Text
+                style={styles.featureText}
+              >
+                Generate AI-powered legal
+                summaries instantly.
+              </Text>
+
             </LinearGradient>
+
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.featureCard}
-            onPress={() => router.push("/argument")}
+
+            activeOpacity={0.85}
+
+            onPress={() =>
+              router.push("/argument")
+            }
           >
+
             <LinearGradient
-              colors={["#0f172a", "#1e293b"]}
+              colors={[
+                "#0F172A",
+                "#1E293B",
+              ]}
+
               style={styles.gradientCard}
             >
+
               <Ionicons
                 name="chatbox-ellipses"
-                size={32}
-                color="#c4b5fd"
+                size={34}
+                color="#C4B5FD"
               />
 
-              <Text style={styles.featureTitle}>Arguments</Text>
-
-              <Text style={styles.featureText}>
-                AI-generated legal arguments
+              <Text
+                style={styles.featureTitle}
+              >
+                Arguments
               </Text>
+
+              <Text
+                style={styles.featureText}
+              >
+                Generate courtroom-ready
+                legal arguments.
+              </Text>
+
             </LinearGradient>
+
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.featureCard}
-            onPress={() => router.push("/history")}
+
+            activeOpacity={0.85}
+
+            onPress={() =>
+              router.push("/timeline")
+            }
           >
+
             <LinearGradient
-              colors={["#172554", "#1d4ed8"]}
+              colors={[
+                "#3B0764",
+                "#7E22CE",
+              ]}
+
               style={styles.gradientCard}
             >
-              <Ionicons name="time" size={32} color="#bfdbfe" />
 
-              <Text style={styles.featureTitle}>History</Text>
+              <Ionicons
+                name="git-branch"
+                size={34}
+                color="#E9D5FF"
+              />
 
-              <Text style={styles.featureText}>
-                Access previous case records
+              <Text
+                style={styles.featureTitle}
+              >
+                Timeline
               </Text>
+
+              <Text
+                style={styles.featureText}
+              >
+                Visualize legal chronology
+                using AI.
+              </Text>
+
             </LinearGradient>
+
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.featureCard}
-          onPress={() => router.push("/timeline")}>
+          <TouchableOpacity
+            style={styles.featureCard}
+
+            activeOpacity={0.85}
+
+            onPress={() =>
+              router.push("/history")
+            }
+          >
+
             <LinearGradient
-              colors={["#3b0764", "#7e22ce"]}
+              colors={[
+                "#172554",
+                "#1D4ED8",
+              ]}
+
               style={styles.gradientCard}
             >
-              <Ionicons name="git-branch" size={32} color="#e9d5ff" />
 
-              <Text style={styles.featureTitle}>Timeline</Text>
+              <Ionicons
+                name="time"
+                size={34}
+                color="#BFDBFE"
+              />
 
-              <Text style={styles.featureText}>
-                Visual legal timeline generation
+              <Text
+                style={styles.featureTitle}
+              >
+                History
               </Text>
+
+              <Text
+                style={styles.featureText}
+              >
+                Access all previous legal
+                analyses.
+              </Text>
+
             </LinearGradient>
+
           </TouchableOpacity>
+
         </View>
+
       </View>
 
-      {/* RECENT ACTIVITY */}
+      {/* RECENT CASES */}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
 
-        <View style={styles.activityCard}>
-          <Ionicons name="document" size={22} color="#8b5cf6" />
+        <Text style={styles.sectionTitle}>
+          Recent Cases
+        </Text>
 
-          <View style={styles.activityText}>
-            <Text style={styles.activityTitle}>
-              Property_Dispute.pdf
-            </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={
+            false
+          }
+        >
 
-            <Text style={styles.activitySubtitle}>
-              Summary generated successfully
-            </Text>
-          </View>
-        </View>
+          {recentCases.map(
+            (item, index) => (
 
-        <View style={styles.activityCard}>
-          <Ionicons name="chatbox" size={22} color="#8b5cf6" />
+              <TouchableOpacity
+                key={index}
 
-          <View style={styles.activityText}>
-            <Text style={styles.activityTitle}>
-              Criminal Appeal Arguments
-            </Text>
+                activeOpacity={0.85}
 
-            <Text style={styles.activitySubtitle}>
-              AI arguments created
-            </Text>
-          </View>
-        </View>
+                style={styles.recentCard}
+              >
+
+                <View style={styles.badge}>
+
+                  <Text
+                    style={styles.badgeText}
+                  >
+                    AI ANALYZED
+                  </Text>
+
+                </View>
+
+                <Text
+                  numberOfLines={1}
+
+                  style={styles.recentTitle}
+                >
+                  {item.title}
+                </Text>
+
+                <Text
+                  numberOfLines={3}
+
+                  style={styles.recentPreview}
+                >
+                  {item?.summary?.facts?.[0] ||
+
+                    "Legal case analysis"}
+                </Text>
+
+              </TouchableOpacity>
+            )
+          )}
+
+        </ScrollView>
+
       </View>
 
-      {/* AI ASSISTANT */}
+      {/* AI BANNER */}
 
       <LinearGradient
-        colors={["#4c1d95", "#7e22ce"]}
+        colors={[
+          "#4C1D95",
+          "#7E22CE",
+        ]}
+
         style={styles.assistantBanner}
       >
+
         <View style={{ flex: 1 }}>
-          <Text style={styles.assistantTitle}>
-            Need AI Legal Insights?
+
+          <Text
+            style={styles.assistantTitle}
+          >
+            AI Legal Intelligence
           </Text>
 
-          <Text style={styles.assistantText}>
-            Analyze complex legal cases instantly using AI.
+          <Text
+            style={styles.assistantText}
+          >
+            Analyze cases, generate
+            timelines, and create legal
+            arguments instantly.
           </Text>
+
         </View>
 
-        <Ionicons name="sparkles" size={40} color="white" />
+        <Ionicons
+          name="sparkles"
+          size={42}
+          color="white"
+        />
+
       </LinearGradient>
+
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: "#020617",
   },
 
   hero: {
-    paddingTop: 80,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
+    paddingTop: 75,
+    paddingHorizontal: 22,
+    paddingBottom: 38,
+
+    borderBottomLeftRadius: 34,
+    borderBottomRightRadius: 34,
   },
 
   heroTop: {
@@ -258,72 +537,84 @@ const styles = StyleSheet.create({
   },
 
   greeting: {
-    color: "#ddd6fe",
+    color: "#DDD6FE",
     fontSize: 16,
   },
 
   username: {
-    color: "white",
+    color: "#fff",
     fontSize: 32,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginTop: 5,
   },
 
   aiIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    width: 64,
+    height: 64,
+    borderRadius: 999,
+
+    backgroundColor:
+      "rgba(255,255,255,0.15)",
+
     justifyContent: "center",
     alignItems: "center",
   },
 
   heroText: {
-    color: "#e9d5ff",
-    marginTop: 20,
-    fontSize: 16,
+    color: "#E9D5FF",
+    marginTop: 22,
+    fontSize: 15,
     lineHeight: 24,
   },
 
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginTop: -30,
+
+    paddingHorizontal: 18,
+
+    marginTop: -28,
   },
 
   statCard: {
-    backgroundColor: "#0f172a",
     width: "31%",
-    borderRadius: 22,
-    paddingVertical: 20,
+
+    backgroundColor: "#111827",
+
+    borderRadius: 24,
+
+    paddingVertical: 22,
+
     alignItems: "center",
+
     borderWidth: 1,
-    borderColor: "#1e293b",
+
+    borderColor:
+      "rgba(255,255,255,0.05)",
   },
 
   statNumber: {
-    color: "white",
+    color: "#fff",
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginTop: 10,
   },
 
   statLabel: {
-    color: "#94a3b8",
-    marginTop: 5,
+    color: "#94A3B8",
+    marginTop: 6,
   },
 
   section: {
-    paddingHorizontal: 20,
-    marginTop: 30,
+    marginTop: 34,
+    paddingHorizontal: 18,
   },
 
   sectionTitle: {
-    color: "white",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 18,
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "800",
+    marginBottom: 20,
   },
 
   grid: {
@@ -334,74 +625,109 @@ const styles = StyleSheet.create({
 
   featureCard: {
     width: "48%",
-    marginBottom: 15,
+    marginBottom: 16,
   },
 
   gradientCard: {
-    borderRadius: 24,
-    padding: 20,
     height: 180,
+
+    borderRadius: 26,
+
+    padding: 20,
+
     justifyContent: "space-between",
   },
 
   featureTitle: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 21,
+    fontWeight: "700",
   },
 
   featureText: {
-    color: "#cbd5e1",
+    color: "#CBD5E1",
     fontSize: 13,
     lineHeight: 20,
   },
 
-  activityCard: {
-    backgroundColor: "#0f172a",
-    borderRadius: 20,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
+  recentCard: {
+    width: 250,
+
+    backgroundColor: "#111827",
+
+    borderRadius: 24,
+
+    padding: 20,
+
+    marginRight: 16,
+
     borderWidth: 1,
-    borderColor: "#1e293b",
+
+    borderColor:
+      "rgba(255,255,255,0.05)",
   },
 
-  activityText: {
-    marginLeft: 14,
-    flex: 1,
+  badge: {
+    alignSelf: "flex-start",
+
+    backgroundColor: "#312E81",
+
+    paddingHorizontal: 14,
+
+    paddingVertical: 7,
+
+    borderRadius: 999,
+
+    marginBottom: 14,
   },
 
-  activityTitle: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
   },
 
-  activitySubtitle: {
-    color: "#94a3b8",
-    marginTop: 4,
+  recentTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+
+  recentPreview: {
+    color: "#CBD5E1",
+    lineHeight: 22,
+    fontSize: 14,
   },
 
   assistantBanner: {
-    margin: 20,
+    margin: 18,
+
+    marginTop: 38,
+
+    marginBottom: 45,
+
     borderRadius: 28,
+
     padding: 24,
+
     flexDirection: "row",
+
     alignItems: "center",
-    marginBottom: 40,
   },
 
   assistantTitle: {
-    color: "white",
-    fontSize: 22,
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "800",
   },
 
   assistantText: {
-    color: "#e9d5ff",
+    color: "#E9D5FF",
     marginTop: 10,
     lineHeight: 22,
     paddingRight: 10,
   },
+
 });
+

@@ -2,11 +2,18 @@ const mongoose = require("mongoose");
 
 const summarySchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     caseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Case",
       required: true,
     },
+
     text: {
       type: String,
       required: true,
@@ -15,6 +22,6 @@ const summarySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent model overwrite (your fix is correct 👍)
 module.exports =
-  mongoose.models.Summary || mongoose.model("Summary", summarySchema);
+  mongoose.models.Summary ||
+  mongoose.model("Summary", summarySchema);

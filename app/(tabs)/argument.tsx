@@ -5,25 +5,24 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 // import Navbar from "../components/Navbar";
+import { router } from "@/.expo/types/router";
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
 
 export default function ArgumentGenerator() {
 
   const [mode, setMode] = useState<"existing" | "new">("existing");
-
+const [argumentsData, setArgumentsData] = useState<any>(null);
   const [cases, setCases] = useState<any[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const [input, setInput] = useState("");
 
-  const [argumentsResult, setArgumentsResult] = useState("");
   const [loading, setLoading] = useState(false);
 
   // FETCH CASES
@@ -88,11 +87,7 @@ export default function ArgumentGenerator() {
 
       const data = await res.json();
 
-      setArgumentsResult(
-        data.arguments ||
-        data.result ||
-        "No arguments generated"
-      );
+      setArgumentsData(data.arguments);
 
     } catch (err) {
       console.log(err);
@@ -105,42 +100,7 @@ export default function ArgumentGenerator() {
   // NEW CASE ARGUMENTS
   const handleGenerateFromNew = async () => {
 
-    if (!input.trim()) {
-      alert("Please enter case details");
-      return;
-    }
-
-    try {
-
-      setLoading(true);
-
-      const token = await getToken();
-
-      const res = await fetch(API.generateArguments, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          text: input,
-        }),
-      });
-
-      const data = await res.json();
-
-      setArgumentsResult(
-        data.arguments ||
-        data.result ||
-        "No arguments generated"
-      );
-
-    } catch (err) {
-      console.log(err);
-      alert("Failed to generate arguments");
-    } finally {
-      setLoading(false);
-    }
+    router.push("/summarizer");
   };
 
   return (
@@ -174,7 +134,7 @@ export default function ArgumentGenerator() {
             ]}
             onPress={() => {
               setMode("existing");
-              setArgumentsResult("");
+              setArgumentsData(null);
             }}
           >
             <Text
@@ -197,7 +157,6 @@ export default function ArgumentGenerator() {
             ]}
             onPress={() => {
               setMode("new");
-              setArgumentsResult("");
             }}
           >
             <Text
@@ -264,10 +223,8 @@ export default function ArgumentGenerator() {
                       numberOfLines={4}
                       style={styles.preview}
                     >
-                      {item.summary ||
-                        item.text ||
-                        item.content ||
-                        "AI summarized legal document"}
+                      {item?.summary?.facts?.[0] ||
+ "AI summarized legal document"}
                     </Text>
 
                   </TouchableOpacity>
@@ -296,51 +253,106 @@ export default function ArgumentGenerator() {
         {/* NEW CASE */}
         {mode === "new" && (
 
-          <View>
-
-            <TextInput
-              placeholder="Enter legal case details..."
-              placeholderTextColor="#6B7280"
-              multiline
-              value={input}
-              onChangeText={setInput}
-              style={styles.input}
-            />
-
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleGenerateFromNew}
-            >
-
-              {loading ? (
-                <ActivityIndicator color="#000" />
-              ) : (
-                <Text style={styles.buttonText}>
-                  Generate AI Arguments
-                </Text>
-              )}
-
-            </TouchableOpacity>
-
-          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push("/summarizer")}
+          >
+            <Text style={styles.buttonText}>
+              Go To Summarizer
+            </Text>
+          </TouchableOpacity>
         )}
 
-        {/* RESULT */}
-        {argumentsResult ? (
+       {/* RESULT */}
+{argumentsData ? (
 
-          <View style={styles.resultContainer}>
+  <View style={styles.resultContainer}>
 
-            <Text style={styles.resultTitle}>
-              AI Generated Arguments
-            </Text>
+    {/* PLAINTIFF */}
 
-            <Text style={styles.resultText}>
-              {argumentsResult}
+    <View style={styles.sideCard}>
+
+      <Text style={styles.sideTitle}>
+        ⚖️ Plaintiff Arguments
+      </Text>
+
+      {argumentsData?.plaintiffArguments?.map(
+        (arg: string, index: number) => (
+
+          <View
+            key={index}
+            style={styles.argumentCard}
+          >
+
+            <Text style={styles.argumentText}>
+              • {arg}
             </Text>
 
           </View>
+        )
+      )}
 
-        ) : null}
+    </View>
+
+    {/* DEFENDANT */}
+
+    <View style={styles.sideCard}>
+
+      <Text style={styles.sideTitle}>
+        🛡️ Defendant Arguments
+      </Text>
+
+      {argumentsData?.defendantArguments?.map(
+        (arg: string, index: number) => (
+
+          <View
+            key={index}
+            style={styles.argumentCard}
+          >
+
+            <Text style={styles.argumentText}>
+              • {arg}
+            </Text>
+
+          </View>
+        )
+      )}
+
+    </View>
+
+    {/* LEGAL POINTS */}
+
+    <View style={styles.sideCard}>
+
+      <Text style={styles.sideTitle}>
+        📚 Key Legal Points
+      </Text>
+
+      <View style={styles.pointsContainer}>
+
+        {argumentsData?.keyLegalPoints?.map(
+          (point: string, index: number) => (
+
+            <View
+              key={index}
+              style={styles.pointChip}
+            >
+
+              <Text style={styles.pointText}>
+                {point}
+              </Text>
+
+            </View>
+          )
+        )}
+
+      </View>
+
+    </View>
+
+  </View>
+
+) : null}
 
       </View>
 
@@ -352,36 +364,61 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#0B0F19",
-    minHeight: "100%",
+    backgroundColor: "#020617",
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 50,
+  },
+
+  hero: {
+    marginTop: 20,
+    marginBottom: 28,
   },
 
   heading: {
     fontSize: 34,
     fontWeight: "800",
     color: "#fff",
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
-  subtitle: {
-    color: "#9CA3AF",
-    fontSize: 16,
-    marginBottom: 28,
+  subheading: {
+    fontSize: 15,
+    color: "#94A3B8",
+    lineHeight: 24,
+  },
+
+  card: {
+    backgroundColor: "#111827",
+    borderRadius: 28,
+    padding: 22,
+
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+
+    elevation: 8,
   },
 
   toggleContainer: {
     flexDirection: "row",
-    backgroundColor: "#111827",
-    borderRadius: 16,
+    backgroundColor: "#1F2937",
+    borderRadius: 18,
     padding: 6,
-    marginBottom: 28,
+    marginBottom: 24,
   },
 
   toggleBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
   },
 
@@ -392,77 +429,60 @@ const styles = StyleSheet.create({
   activeText: {
     color: "#000",
     fontWeight: "700",
+    fontSize: 15,
   },
 
   inactiveText: {
     color: "#9CA3AF",
     fontWeight: "600",
+    fontSize: 15,
   },
 
-  caseCount: {
-    color: "#D4AF37",
+  selectBox: {
+    backgroundColor: "#0F172A",
+    borderRadius: 20,
+    padding: 18,
     marginBottom: 18,
-    fontWeight: "700",
-  },
 
-  emptyCard: {
-    backgroundColor: "#111827",
-    padding: 24,
-    borderRadius: 22,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  emptyText: {
-    color: "#9CA3AF",
-  },
-
-  card: {
-    backgroundColor: "#111827",
-    borderRadius: 22,
-    padding: 20,
-    marginBottom: 16,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.05)",
   },
 
-  selectedCard: {
-    borderColor: "#D4AF37",
-    backgroundColor: "rgba(212,175,55,0.08)",
-    borderWidth: 2,
-  },
-
-  cardTitle: {
+  selectText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
+    fontSize: 15,
   },
 
-  preview: {
-    color: "#9CA3AF",
+
+  caseTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    marginBottom: 8,
+  },
+
+  casePreview: {
+    color: "#CBD5E1",
     lineHeight: 22,
     fontSize: 14,
   },
 
-  input: {
-    backgroundColor: "#111827",
-    borderRadius: 22,
-    minHeight: 220,
-    padding: 20,
-    color: "#fff",
-    textAlignVertical: "top",
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
-  },
-
   button: {
+    marginTop: 24,
     backgroundColor: "#D4AF37",
     paddingVertical: 18,
     borderRadius: 18,
     alignItems: "center",
-    marginTop: 20,
+
+    shadowColor: "#D4AF37",
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+
+    elevation: 8,
   },
 
   buttonText: {
@@ -473,24 +493,111 @@ const styles = StyleSheet.create({
 
   resultContainer: {
     marginTop: 30,
+  },
+
+  sideCard: {
     backgroundColor: "#111827",
+    padding: 22,
     borderRadius: 24,
-    padding: 24,
+    marginBottom: 22,
+
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.05)",
   },
 
-  resultTitle: {
+  sideTitle: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 18,
+    marginBottom: 20,
   },
 
-  resultText: {
-    color: "#D1D5DB",
-    lineHeight: 30,
-    fontSize: 16,
+  argumentCard: {
+    backgroundColor: "#0F172A",
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 14,
   },
 
+  argumentText: {
+    color: "#E5E7EB",
+    lineHeight: 24,
+    fontSize: 15,
+  },
+
+  pointsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+
+  pointChip: {
+    backgroundColor: "#312E81",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+
+  pointText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+
+  emptyText: {
+    color: "#94A3B8",
+    textAlign: "center",
+    marginTop: 30,
+    fontSize: 15,
+  },
+subtitle: {
+  color: "#94A3B8",
+  fontSize: 15,
+  marginBottom: 26,
+  lineHeight: 24,
+},
+
+caseCount: {
+  color: "#CBD5E1",
+  marginBottom: 16,
+  fontSize: 14,
+},
+
+emptyCard: {
+  backgroundColor: "#111827",
+  padding: 24,
+  borderRadius: 20,
+  alignItems: "center",
+},
+
+selectedCard: {
+  borderWidth: 2,
+  borderColor: "#D4AF37",
+},
+
+cardTitle: {
+  color: "#fff",
+  fontSize: 18,
+  fontWeight: "700",
+  marginBottom: 10,
+},
+
+preview: {
+  color: "#CBD5E1",
+  lineHeight: 22,
+  fontSize: 14,
+},
+
+input: {
+  backgroundColor: "#0F172A",
+  minHeight: 220,
+  borderRadius: 22,
+  padding: 20,
+  color: "#fff",
+  fontSize: 16,
+  textAlignVertical: "top",
+
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.05)",
+},
 });
