@@ -29,7 +29,7 @@ app.use("/", require("./routes/timelineRoutes"));
 
 app.use("/", require("./routes/dashboardRoutes"));
 
-app.use("/", require("./routes/chatRoutes"));
+// app.use("/", require("./routes/chatRoutes"));
 
 const PORT = process.env.PORT || 5000;
 
