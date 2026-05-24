@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 // import Navbar from "../components/Navbar";
-import { router } from "@/.expo/types/router";
+import { router } from "expo-router";
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
 
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
 
   activeBtn: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#8B5CF6",
   },
 
   activeText: {
@@ -469,12 +469,12 @@ const styles = StyleSheet.create({
 
   button: {
     marginTop: 24,
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#8B5CF6",
     paddingVertical: 18,
     borderRadius: 18,
     alignItems: "center",
 
-    shadowColor: "#D4AF37",
+    shadowColor: "#8B5CF6",
     shadowOffset: {
       width: 0,
       height: 0,
@@ -529,15 +529,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
   },
+pointChip: {
+  backgroundColor: "#312E81",
 
-  pointChip: {
-    backgroundColor: "#312E81",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    marginRight: 10,
-    marginBottom: 10,
-  },
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+
+  borderRadius: 16,
+
+  marginRight: 10,
+  marginBottom: 10,
+
+  maxWidth: "100%",
+},
+
 
   pointText: {
     color: "#fff",
@@ -572,7 +577,7 @@ emptyCard: {
 
 selectedCard: {
   borderWidth: 2,
-  borderColor: "#D4AF37",
+  borderColor: "#8B5CF6",
 },
 
 cardTitle: {

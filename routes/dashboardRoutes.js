@@ -7,7 +7,7 @@ const Summary = require("../models/Summary");
 // const Argument = require("../models/Argument");
 
 const authMiddleware = require("../middleware/auth");
-
+const Argument = require("../models/Argument");
 const router = express.Router();
 
 /* ---------------- DASHBOARD STATS ---------------- */
@@ -30,13 +30,13 @@ router.get(
         });
 
       // TEMPORARY
-      const totalArguments = 0;
+      // const totalArguments = 0;
 
       // LATER:
-      // const totalArguments =
-      //   await Argument.countDocuments({
-      //     userId,
-      //   });
+      const totalArguments =
+        await Argument.countDocuments({
+          userId,
+        });
 
       res.json({
         cases: totalCases,

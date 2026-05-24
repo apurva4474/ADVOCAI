@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { useNavigation } from "@react-navigation/native";
 // import Navbar from "../../components/Navbar";
@@ -156,18 +157,27 @@ if (mode === "file") {
     <View style={styles.container}>
 
       {/* HERO */}
-      <View style={styles.hero}>
+      <LinearGradient
+  colors={[
+    "#312E81",
+    "#6D28D9",
+    "#9333EA",
+  ]}
 
-        <Text style={styles.heading}>
-          AI Legal Summarizer
-        </Text>
+  style={styles.hero}
+>
 
-        <Text style={styles.subheading}>
-          Upload case files or paste legal text to generate
-          AI-powered summaries instantly.
-        </Text>
+  <Text style={styles.heading}>
+    AI Legal Summarizer
+  </Text>
 
-      </View>
+  <Text style={styles.subheading}>
+    Upload legal documents and
+    generate structured AI-powered
+    legal analysis instantly.
+  </Text>
+
+</LinearGradient>
 
       {/* MAIN CARD */}
       <View style={styles.card}>
@@ -388,11 +398,15 @@ const styles = StyleSheet.create({
   },
 
   hero: {
-  width: "100%",
-  marginTop: 25,
-  marginBottom: 28,
-},
+  paddingTop: 70,
+  paddingHorizontal: 22,
+  paddingBottom: 38,
 
+  borderBottomLeftRadius: 34,
+  borderBottomRightRadius: 34,
+
+  marginBottom: 24,
+},
   heading: {
     fontSize: 34,
     fontWeight: "800",
@@ -433,7 +447,7 @@ subheading: {
   },
 
   activeBtn: {
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#8B5CF6",
   },
 
   activeText: {
@@ -465,12 +479,12 @@ subheading: {
     borderRadius: 24,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: "#D4AF37",
+    borderColor: "#8B5CF6",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#0F172A",
     padding: 30,
-    shadowColor: "#D4AF37",
+    shadowColor: "#8B5CF6",
 shadowOffset: {
   width: 0,
   height: 0,
@@ -498,13 +512,30 @@ elevation: 8,
     textAlign: "center",
   },
 
-  button: {
-    marginTop: 22,
-    backgroundColor: "#D4AF37",
-    paddingVertical: 18,
-    borderRadius: 18,
-    alignItems: "center",
+ button: {
+  marginTop: 24,
+
+  backgroundColor: "#8B5CF6",
+
+  paddingVertical: 18,
+
+  borderRadius: 18,
+
+  alignItems: "center",
+
+  shadowColor: "#8B5CF6",
+
+  shadowOffset: {
+    width: 0,
+    height: 0,
   },
+
+  shadowOpacity: 0.3,
+
+  shadowRadius: 18,
+
+  elevation: 8,
+},
 
   buttonText: {
     color: "#000",
@@ -519,7 +550,7 @@ elevation: 8,
     borderRadius: 28,
     padding: 30,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
+    borderColor: "rgba(255,255,255,0.05)",
   },
 
   resultTitle: {
@@ -573,16 +604,19 @@ issueChip: {
   marginRight: 10,
   marginBottom: 10,
 },
-
 issueText: {
   color: "#fff",
   fontWeight: "600",
+
+  flexShrink: 1,
+
+  flexWrap: "wrap",
 },
 
 judgementCard: {
   backgroundColor: "#1E293B",
   borderLeftWidth: 5,
-  borderLeftColor: "#D4AF37",
+  borderLeftColor: "#8B5CF6",
   padding: 22,
   borderRadius: 18,
 },

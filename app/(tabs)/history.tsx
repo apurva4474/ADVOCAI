@@ -31,7 +31,7 @@ export default function History() {
 
       const res = await fetch(API.getCases, {
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -56,9 +56,8 @@ export default function History() {
   }, []);
 
  const renderItem = ({ item }: any) => {
-
-  const facts =
-    item?.summary?.facts[0] || [];
+const fact =
+  item?.summary?.facts?.[0];
 
   return (
     <TouchableOpacity
@@ -88,8 +87,8 @@ export default function History() {
         numberOfLines={3}
         style={styles.preview}
       >
-        {facts.length > 0
-          ? facts[0]
+        {fact
+        ?fact
           : "No summary available"}
       </Text>
 
