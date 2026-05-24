@@ -1,5 +1,6 @@
 
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,7 +23,25 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
+  const handleLogout = async () => {
 
+  try {
+
+    await AsyncStorage.removeItem(
+      "token"
+    );
+
+    await AsyncStorage.removeItem(
+      "username"
+    );
+
+    router.replace("/login");
+
+  } catch (error) {
+
+    console.log(error);
+  }
+};
   const [username, setUsername] =
     useState("");
 
@@ -31,7 +50,9 @@ export default function HomeScreen() {
     summaries: 0,
     arguments: 0,
   });
-
+const [logoutVisible,
+  setLogoutVisible] =
+  useState(false);
   const [recentCases, setRecentCases] =
     useState<any[]>([]);
 
@@ -149,15 +170,25 @@ export default function HomeScreen() {
 
           </View>
 
-          <View style={styles.aiIcon}>
-
+          <TouchableOpacity
+            style={styles.aiIcon}
+            activeOpacity={0.85}
+            onPress={() =>
+  setLogoutVisible(true)
+}
+          >
             <Ionicons
-              name="sparkles"
-              size={30}
+              name="log-out-outline"
+              size={28}
               color="white"
             />
+          </TouchableOpacity>
 
-          </View>
+          <Ionicons
+            name="sparkles"
+            size={30}
+            color="white"
+          />
 
         </View>
 
@@ -468,7 +499,66 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )
           )}
+<Modal
+  transparent
+  visible={logoutVisible}
+  animationType="fade"
+>
 
+  <View style={styles.modalOverlay}>
+
+    <View style={styles.modalCard}>
+
+      <Ionicons
+        name="log-out-outline"
+        size={42}
+        color="#8B5CF6"
+      />
+
+      <Text style={styles.modalTitle}>
+        Logout?
+      </Text>
+
+      <Text style={styles.modalText}>
+        Are you sure you want to logout
+        from ADVOCAI?
+      </Text>
+
+      <View style={styles.modalButtons}>
+
+        <TouchableOpacity
+          style={styles.cancelBtn}
+
+          onPress={() =>
+            setLogoutVisible(false)
+          }
+        >
+
+          <Text style={styles.cancelText}>
+            Cancel
+          </Text>
+
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.logoutBtn}
+
+          onPress={handleLogout}
+        >
+
+          <Text style={styles.logoutText}>
+            Logout
+          </Text>
+
+        </TouchableOpacity>
+
+      </View>
+
+    </View>
+
+  </View>
+
+</Modal>
         </ScrollView>
 
       </View>
@@ -515,7 +605,100 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+modalOverlay: {
+  flex: 1,
 
+  backgroundColor:
+    "rgba(0,0,0,0.7)",
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  paddingHorizontal: 24,
+},
+
+modalCard: {
+  width: "100%",
+
+  backgroundColor: "#111827",
+
+  borderRadius: 30,
+
+  padding: 28,
+
+  alignItems: "center",
+
+  borderWidth: 1,
+
+  borderColor:
+    "rgba(255,255,255,0.05)",
+},
+
+modalTitle: {
+  color: "#fff",
+
+  fontSize: 24,
+
+  fontWeight: "800",
+
+  marginTop: 18,
+},
+
+modalText: {
+  color: "#CBD5E1",
+
+  textAlign: "center",
+
+  marginTop: 12,
+
+  lineHeight: 24,
+
+  fontSize: 15,
+},
+
+modalButtons: {
+  flexDirection: "row",
+
+  marginTop: 28,
+},
+
+cancelBtn: {
+  flex: 1,
+
+  backgroundColor: "#1F2937",
+
+  paddingVertical: 16,
+
+  borderRadius: 16,
+
+  alignItems: "center",
+
+  marginRight: 10,
+},
+
+logoutBtn: {
+  flex: 1,
+
+  backgroundColor: "#6D28D9",
+
+  paddingVertical: 16,
+
+  borderRadius: 16,
+
+  alignItems: "center",
+},
+
+cancelText: {
+  color: "#fff",
+
+  fontWeight: "700",
+},
+
+logoutText: {
+  color: "#fff",
+
+  fontWeight: "800",
+},
   container: {
     flex: 1,
     backgroundColor: "#020617",

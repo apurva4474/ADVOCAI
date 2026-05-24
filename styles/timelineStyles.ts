@@ -74,7 +74,7 @@ export const timelineStyles = StyleSheet.create({
 
   selectedCard: {
     borderWidth: 2,
-    borderColor: "#D4AF37",
+    borderColor: "#8B5CF6",
   },
 
   cardTitle: {
@@ -92,12 +92,12 @@ export const timelineStyles = StyleSheet.create({
 
   button: {
     marginTop: 24,
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#8B5CF6",
     paddingVertical: 18,
     borderRadius: 18,
     alignItems: "center",
 
-    shadowColor: "#D4AF37",
+    shadowColor: "#8B5CF6",
     shadowOffset: {
       width: 0,
       height: 0,
@@ -132,7 +132,7 @@ export const timelineStyles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 999,
-    backgroundColor: "#D4AF37",
+    backgroundColor: "#8B5CF6",
   },
 
   line: {
@@ -153,7 +153,7 @@ export const timelineStyles = StyleSheet.create({
   },
 
   timelineDate: {
-    color: "#D4AF37",
+    color: "#8B5CF6",
     fontWeight: "700",
     marginBottom: 10,
     fontSize: 14,
