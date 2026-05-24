@@ -184,12 +184,6 @@ const [logoutVisible,
             />
           </TouchableOpacity>
 
-          <Ionicons
-            name="sparkles"
-            size={30}
-            color="white"
-          />
-
         </View>
 
         <Text style={styles.heroText}>

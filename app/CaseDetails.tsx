@@ -1,6 +1,3 @@
-
-import { useNavigation, useRoute } from "@react-navigation/native";
-
 import { useEffect, useState } from "react";
 
 import {
@@ -12,60 +9,69 @@ import {
   View,
 } from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams }
+  from "expo-router";
 
-import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons }
+  from "@expo/vector-icons";
 
-import { API } from "../constants/api";
+import { LinearGradient }
+  from "expo-linear-gradient";
 
-import { getToken } from "../utils/auth";
+import { API }
+  from "../constants/api";
+
+import { getToken }
+  from "../utils/auth";
 
 export default function CaseDetails() {
 
-  const route = useRoute<any>();
-
-  const navigation = useNavigation<any>();
-
-  const { caseId } = route.params;
+  const { caseId } =
+    useLocalSearchParams();
 
   const [loading, setLoading] =
     useState(true);
 
+  const [generatingArgs,
+    setGeneratingArgs] =
+    useState(false);
+
+  const [generatingTimeline,
+    setGeneratingTimeline] =
+    useState(false);
+
   const [caseData, setCaseData] =
     useState<any>(null);
-
-  const [generatingArguments,
-    setGeneratingArguments] =
-    useState(false);
 
   const [argumentsData,
     setArgumentsData] =
     useState<any>(null);
 
-  /* ---------------- FETCH CASE ---------------- */
+  const [timeline,
+    setTimeline] =
+    useState<any[]>([]);
 
-  const fetchCaseDetails =
-    async () => {
+  /* ---------------- FETCH DATA ---------------- */
 
-      try {
+  const fetchData = async () => {
 
-        const token =
-          await getToken();
+    try {
 
-        if (!token) {
+      const token =
+        await getToken();
 
-          alert(
-            "Please login first"
-          );
+      if (!token) {
 
-          navigation.navigate(
-            "Login"
-          );
+        router.replace("/login");
 
-          return;
-        }
+        return;
+      }
 
-        const res = await fetch(
+      /* CASE */
+
+      const caseRes =
+        await fetch(
+
           `${API.getCaseById}/${caseId}`,
 
           {
@@ -76,26 +82,80 @@ export default function CaseDetails() {
           }
         );
 
-        const json =
-          await res.json();
+      const caseJson =
+        await caseRes.json();
 
-        setCaseData(json);
+      if (caseRes.ok) {
+        setCaseData(caseJson);
+      }
 
-      } catch (err) {
+      /* ARGUMENTS */
 
-        console.log(
-          "CASE DETAILS ERROR:",
-          err
+      const argRes =
+        await fetch(
+
+          `${API.getArgumentsByCase}/${caseId}`,
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
         );
 
-      } finally {
+      if (argRes.ok) {
 
-        setLoading(false);
+        const argJson =
+          await argRes.json();
+
+        setArgumentsData(
+          argJson.arguments
+        );
       }
-    };
+
+      /* TIMELINE */
+
+      const timelineRes =
+        await fetch(
+
+          `${API.getTimelineByCase}/${caseId}`,
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+      if (timelineRes.ok) {
+
+        const timelineJson =
+          await timelineRes.json();
+
+        setTimeline(
+          timelineJson.timeline
+        );
+      }
+
+    } catch (error) {
+
+      console.log(
+        "CASE DETAILS ERROR:",
+        error
+      );
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchCaseDetails();
+
+    fetchData();
+
   }, []);
 
   /* ---------------- GENERATE ARGUMENTS ---------------- */
@@ -105,48 +165,118 @@ export default function CaseDetails() {
 
       try {
 
-        setGeneratingArguments(true);
+        setGeneratingArgs(true);
 
         const token =
           await getToken();
 
-        const res = await fetch(
-          API.generateArguments,
+        const res =
+          await fetch(
 
-          {
-            method: "POST",
+            API.generateArguments,
 
-            headers: {
-              "Content-Type":
-                "application/json",
+            {
+              method: "POST",
 
-              Authorization:
-                `Bearer ${token}`,
-            },
+              headers: {
+                "Content-Type":
+                  "application/json",
 
-            body: JSON.stringify({
-              caseId,
-            }),
-          }
-        );
+                Authorization:
+                  `Bearer ${token}`,
+              },
 
-        const json =
+              body: JSON.stringify({
+                caseId,
+              }),
+            }
+          );
+
+        const data =
           await res.json();
 
-        setArgumentsData(
-          json.arguments
-        );
+        if (res.ok) {
 
-      } catch (err) {
+          setArgumentsData(
+            data.arguments
+          );
 
-        console.log(
-          "ARGUMENT ERROR:",
-          err
-        );
+        } else {
+
+          alert(
+            data.error ||
+            "Failed to generate arguments"
+          );
+        }
+
+      } catch (error) {
+
+        console.log(error);
 
       } finally {
 
-        setGeneratingArguments(false);
+        setGeneratingArgs(false);
+      }
+    };
+
+  /* ---------------- GENERATE TIMELINE ---------------- */
+
+  const generateTimeline =
+    async () => {
+
+      try {
+
+        setGeneratingTimeline(true);
+
+        const token =
+          await getToken();
+
+        const res =
+          await fetch(
+
+            API.generateTimeline,
+
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                Authorization:
+                  `Bearer ${token}`,
+              },
+
+              body: JSON.stringify({
+                caseId,
+              }),
+            }
+          );
+
+        const data =
+          await res.json();
+
+        if (res.ok) {
+
+          setTimeline(
+            data.timeline
+          );
+
+        } else {
+
+          alert(
+            data.error ||
+            "Failed to generate timeline"
+          );
+        }
+
+      } catch (error) {
+
+        console.log(error);
+
+      } finally {
+
+        setGeneratingTimeline(false);
       }
     };
 
@@ -156,21 +286,18 @@ export default function CaseDetails() {
 
     return (
 
-      <View style={styles.loadingContainer}>
+      <View style={styles.loader}>
 
         <ActivityIndicator
           size="large"
-          color="#D4AF37"
+          color="#8B5CF6"
         />
 
       </View>
     );
   }
 
-  /* ---------------- SUMMARY ---------------- */
-
-  const summary =
-    caseData?.summary || {};
+  /* ---------------- UI ---------------- */
 
   return (
 
@@ -194,23 +321,15 @@ export default function CaseDetails() {
         style={styles.hero}
       >
 
-        <View style={styles.badge}>
-
-          <Text style={styles.badgeText}>
-            AI ANALYZED
-          </Text>
-
-        </View>
-
-        <Text style={styles.title}>
+        <Text style={styles.caseTitle}>
           {caseData?.title ||
             "Case Details"}
         </Text>
 
-        <Text style={styles.date}>
-          {new Date(
-            caseData?.createdAt
-          ).toLocaleString()}
+        <Text style={styles.heroText}>
+          AI-powered legal workspace
+          with structured arguments
+          and case timeline.
         </Text>
 
       </LinearGradient>
@@ -220,271 +339,190 @@ export default function CaseDetails() {
       <View style={styles.card}>
 
         <Text style={styles.sectionTitle}>
-          📌 Key Facts
+          📄 Case Summary
         </Text>
 
-        {summary?.facts?.map(
-          (
-            fact: string,
-            index: number
-          ) => (
+        <Text style={styles.text}>
+          {caseData?.summary
+            ?.overview ||
 
-            <View
-              key={index}
-              style={styles.factCard}
-            >
-
-              <Text
-                style={styles.factText}
-              >
-                • {fact}
-              </Text>
-
-            </View>
-          )
-        )}
-
-      </View>
-
-      {/* ISSUES */}
-
-      <View style={styles.card}>
-
-        <Text style={styles.sectionTitle}>
-          ⚠️ Legal Issues
+            "No summary available"}
         </Text>
-
-        <View style={styles.chipContainer}>
-
-          {summary?.issues?.map(
-            (
-              issue: string,
-              index: number
-            ) => (
-
-              <View
-                key={index}
-                style={styles.issueChip}
-              >
-
-                <Text
-                  style={styles.issueText}
-                >
-                  {issue}
-                </Text>
-
-              </View>
-            )
-          )}
-
-        </View>
-
-      </View>
-
-      {/* JUDGEMENT */}
-
-      <View style={styles.card}>
-
-        <Text style={styles.sectionTitle}>
-          🧑‍⚖️ Judgement
-        </Text>
-
-        <View
-          style={styles.judgementCard}
-        >
-
-          <Text
-            style={styles.judgementText}
-          >
-            {summary?.judgement ||
-              "No judgement available"}
-          </Text>
-
-        </View>
-
-      </View>
-
-      {/* PRINCIPLES */}
-
-      <View style={styles.card}>
-
-        <Text style={styles.sectionTitle}>
-          📚 Legal Principles
-        </Text>
-
-        {summary?.legalPrinciples?.map(
-          (
-            principle: string,
-            index: number
-          ) => (
-
-            <View
-              key={index}
-              style={styles.principleCard}
-            >
-
-              <Text
-                style={
-                  styles.principleText
-                }
-              >
-                {principle}
-              </Text>
-
-            </View>
-          )
-        )}
-
-      </View>
-
-      {/* ACTIONS */}
-
-      <View style={styles.actionRow}>
-
-        <TouchableOpacity
-          style={styles.actionButton}
-
-          activeOpacity={0.85}
-
-          onPress={generateArguments}
-        >
-
-          {generatingArguments ? (
-
-            <ActivityIndicator
-              color="#000"
-            />
-
-          ) : (
-
-            <>
-              <Ionicons
-                name="chatbox-ellipses"
-                size={20}
-                color="#000"
-              />
-
-              <Text
-                style={
-                  styles.actionButtonText
-                }
-              >
-                Generate Arguments
-              </Text>
-            </>
-          )}
-
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.secondaryButton}
-
-          activeOpacity={0.85}
-
-          onPress={() =>
-            navigation.navigate(
-              "timeline",
-              { caseId }
-            )
-          }
-        >
-
-          <Ionicons
-            name="git-branch"
-            size={20}
-            color="#fff"
-          />
-
-          <Text
-            style={
-              styles.secondaryButtonText
-            }
-          >
-            Timeline
-          </Text>
-
-        </TouchableOpacity>
 
       </View>
 
       {/* ARGUMENTS */}
 
-      {argumentsData ? (
+      <View style={styles.card}>
 
-        <View style={styles.card}>
-
-          {/* PLAINTIFF */}
+        <View style={styles.row}>
 
           <Text style={styles.sectionTitle}>
-            ⚖️ Plaintiff Arguments
+            ⚖️ Arguments
           </Text>
 
-          {argumentsData
-            ?.plaintiffArguments?.map(
-              (
-                arg: string,
-                index: number
-              ) => (
+          {!argumentsData && (
 
-                <View
-                  key={index}
-                  style={styles.argumentCard}
-                >
+            <TouchableOpacity
+              style={styles.actionBtn}
 
-                  <Text
-                    style={
-                      styles.argumentText
-                    }
-                  >
-                    • {arg}
-                  </Text>
+              onPress={
+                generateArguments
+              }
+            >
 
-                </View>
-              )
-            )}
+              <Text
+                style={styles.actionText}
+              >
+                {generatingArgs
+                  ? "Generating..."
+                  : "Generate"}
+              </Text>
 
-          {/* DEFENDANT */}
-
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                marginTop: 26,
-              },
-            ]}
-          >
-            🛡️ Defendant Arguments
-          </Text>
-
-          {argumentsData
-            ?.defendantArguments?.map(
-              (
-                arg: string,
-                index: number
-              ) => (
-
-                <View
-                  key={index}
-                  style={styles.argumentCard}
-                >
-
-                  <Text
-                    style={
-                      styles.argumentText
-                    }
-                  >
-                    • {arg}
-                  </Text>
-
-                </View>
-              )
-            )}
+            </TouchableOpacity>
+          )}
 
         </View>
 
-      ) : null}
+        {argumentsData ? (
 
-      <View style={{ height: 50 }} />
+          <>
+
+            <Text style={styles.subHeading}>
+              Plaintiff Arguments
+            </Text>
+
+            {argumentsData
+              ?.plaintiffArguments
+              ?.map(
+                (
+                  item: string,
+                  index: number
+                ) => (
+
+                  <Text
+                    key={index}
+                    style={styles.point}
+                  >
+                    • {item}
+                  </Text>
+                )
+              )}
+
+            <Text style={styles.subHeading}>
+              Defendant Arguments
+            </Text>
+
+            {argumentsData
+              ?.defendantArguments
+              ?.map(
+                (
+                  item: string,
+                  index: number
+                ) => (
+
+                  <Text
+                    key={index}
+                    style={styles.point}
+                  >
+                    • {item}
+                  </Text>
+                )
+              )}
+
+          </>
+
+        ) : (
+
+          <Text style={styles.empty}>
+            No arguments generated yet.
+          </Text>
+        )}
+
+      </View>
+
+      {/* TIMELINE */}
+
+      <View style={styles.card}>
+
+        <View style={styles.row}>
+
+          <Text style={styles.sectionTitle}>
+            🕒 Timeline
+          </Text>
+
+          {timeline.length === 0 && (
+
+            <TouchableOpacity
+              style={styles.actionBtn}
+
+              onPress={
+                generateTimeline
+              }
+            >
+
+              <Text
+                style={styles.actionText}
+              >
+                {generatingTimeline
+                  ? "Generating..."
+                  : "Generate"}
+              </Text>
+
+            </TouchableOpacity>
+          )}
+
+        </View>
+
+        {timeline.length > 0 ? (
+
+          timeline.map(
+            (
+              item: any,
+              index: number
+            ) => (
+
+              <View
+                key={index}
+                style={styles.timelineItem}
+              >
+
+                <View
+                  style={styles.dot}
+                />
+
+                <View
+                  style={
+                    styles.timelineContent
+                  }
+                >
+
+                  <Text
+                    style={styles.timelineDate}
+                  >
+                    {item.date}
+                  </Text>
+
+                  <Text
+                    style={styles.timelineEvent}
+                  >
+                    {item.event}
+                  </Text>
+
+                </View>
+
+              </View>
+            )
+          )
+
+        ) : (
+
+          <Text style={styles.empty}>
+            No timeline generated yet.
+          </Text>
+        )}
+
+      </View>
 
     </ScrollView>
   );
@@ -495,226 +533,122 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#020617",
+    padding: 18,
   },
 
-  loadingContainer: {
+  loader: {
     flex: 1,
     backgroundColor: "#020617",
-
     justifyContent: "center",
     alignItems: "center",
   },
 
   hero: {
-    paddingTop: 80,
-    paddingHorizontal: 22,
-    paddingBottom: 40,
-
-    borderBottomLeftRadius: 34,
-    borderBottomRightRadius: 34,
+    padding: 28,
+    borderRadius: 28,
+    marginBottom: 24,
   },
 
-  badge: {
-    alignSelf: "flex-start",
-
-    backgroundColor:
-      "rgba(255,255,255,0.18)",
-
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-
-    borderRadius: 999,
-
-    marginBottom: 18,
-  },
-
-  badgeText: {
+  caseTitle: {
     color: "#fff",
-    fontWeight: "700",
-    fontSize: 12,
-  },
-
-  title: {
-    color: "#fff",
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "800",
-    lineHeight: 42,
+    marginBottom: 12,
   },
 
-  date: {
+  heroText: {
     color: "#E9D5FF",
-    marginTop: 14,
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 24,
   },
 
   card: {
     backgroundColor: "#111827",
-
-    marginHorizontal: 18,
-    marginTop: 24,
-
-    borderRadius: 26,
-
+    borderRadius: 24,
     padding: 22,
-
+    marginBottom: 20,
     borderWidth: 1,
-
     borderColor:
       "rgba(255,255,255,0.05)",
   },
 
-  sectionTitle: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "700",
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 18,
   },
 
-  factCard: {
-    backgroundColor: "#0F172A",
-
-    padding: 18,
-
-    borderRadius: 18,
-
-    marginBottom: 14,
-  },
-
-  factText: {
-    color: "#E5E7EB",
-    lineHeight: 24,
-    fontSize: 15,
-  },
-
-  chipContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-
-  issueChip: {
-    backgroundColor: "#312E81",
-
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-
-    borderRadius: 16,
-
-    marginRight: 10,
-    marginBottom: 10,
-
-    maxWidth: "100%",
-  },
-
-  issueText: {
+  sectionTitle: {
     color: "#fff",
-    fontWeight: "600",
-
-    flexShrink: 1,
-
-    flexWrap: "wrap",
-  },
-
-  judgementCard: {
-    backgroundColor: "#1E293B",
-
-    borderLeftWidth: 5,
-    borderLeftColor: "#D4AF37",
-
-    padding: 22,
-
-    borderRadius: 18,
-  },
-
-  judgementText: {
-    color: "#F9FAFB",
-    lineHeight: 28,
-    fontSize: 15,
-  },
-
-  principleCard: {
-    backgroundColor: "#0F172A",
-
-    padding: 18,
-
-    borderRadius: 18,
-
-    marginBottom: 12,
-  },
-
-  principleText: {
-    color: "#E5E7EB",
-    lineHeight: 24,
-    fontSize: 15,
-  },
-
-  actionRow: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    marginHorizontal: 18,
-    marginTop: 28,
-  },
-
-  actionButton: {
-    flex: 1,
-
-    backgroundColor: "#D4AF37",
-
-    paddingVertical: 18,
-
-    borderRadius: 18,
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    flexDirection: "row",
-
-    marginRight: 10,
-  },
-
-  actionButtonText: {
-    color: "#000",
+    fontSize: 20,
     fontWeight: "800",
-    marginLeft: 8,
   },
 
-  secondaryButton: {
-    width: 130,
-
-    backgroundColor: "#1E293B",
-
-    paddingVertical: 18,
-
-    borderRadius: 18,
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    flexDirection: "row",
+  subHeading: {
+    color: "#C4B5FD",
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 18,
+    marginBottom: 10,
   },
 
-  secondaryButtonText: {
+  text: {
+    color: "#CBD5E1",
+    lineHeight: 26,
+    fontSize: 15,
+  },
+
+  point: {
+    color: "#CBD5E1",
+    lineHeight: 24,
+    marginBottom: 10,
+    flexShrink: 1,
+  },
+
+  actionBtn: {
+    backgroundColor: "#6D28D9",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+
+  actionText: {
     color: "#fff",
     fontWeight: "700",
-    marginLeft: 8,
   },
 
-  argumentCard: {
-    backgroundColor: "#0F172A",
-
-    padding: 18,
-
-    borderRadius: 18,
-
-    marginBottom: 14,
+  empty: {
+    color: "#94A3B8",
+    marginTop: 10,
   },
 
-  argumentText: {
-    color: "#E5E7EB",
+  timelineItem: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    backgroundColor: "#8B5CF6",
+    marginTop: 6,
+    marginRight: 14,
+  },
+
+  timelineContent: {
+    flex: 1,
+  },
+
+  timelineDate: {
+    color: "#C4B5FD",
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+
+  timelineEvent: {
+    color: "#CBD5E1",
     lineHeight: 24,
-    fontSize: 15,
   },
-
 });
-

@@ -1,5 +1,5 @@
-import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
   FlatList,
@@ -8,121 +8,214 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-// import Navbar from "../components/Navbar";
+
+import { router } from "expo-router";
+
 import { API } from "../../constants/api";
-import { getToken } from "../../auth";
+
+import { getToken } from "../../utils/auth";
 
 export default function History() {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const navigation = useNavigation<any>();
+  const [data, setData] =
+    useState<any[]>([]);
 
-  // 🔥 Fetch cases with auth
+  const [loading, setLoading] =
+    useState(true);
+
+  /* ---------------- FETCH CASES ---------------- */
+
   const fetchCases = async () => {
+
     try {
-      const token = await getToken();
+
+      const token =
+        await getToken();
 
       if (!token) {
+
         alert("Please login first");
-        navigation.navigate("Login");
+
+        router.replace("/login");
+
         return;
       }
 
-      const res = await fetch(API.getCases, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        API.getCases,
 
-      const json = await res.json();
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+
+      const json =
+        await res.json();
 
       if (res.ok) {
+
         setData(json);
+
       } else {
-        console.log("API ERROR:", json);
-        alert("Failed to fetch cases");
+
+        console.log(
+          "API ERROR:",
+          json
+        );
+
+        alert(
+          json.error ||
+          "Failed to fetch cases"
+        );
       }
+
     } catch (err) {
-      console.log("FETCH CASES ERROR:", err);
+
+      console.log(
+        "FETCH CASES ERROR:",
+        err
+      );
+
       alert("Server error");
+
     } finally {
+
       setLoading(false);
     }
   };
 
   useEffect(() => {
+
     fetchCases();
+
   }, []);
 
- const renderItem = ({ item }: any) => {
-const fact =
-  item?.summary?.facts?.[0];
+  /* ---------------- RENDER ITEM ---------------- */
 
-  return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() =>
-        navigation.navigate(
-          "CaseDetails",
-          {
-            caseId: item.caseId,
-          }
-        )
-      }
-      activeOpacity={0.85}
-    >
+  const renderItem = ({
+    item,
+  }: any) => {
 
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>
-          AI ANALYZED
-        </Text>
-      </View>
+    const fact =
+      item?.summary?.facts?.[0];
 
-      <Text style={styles.title}>
-        {item.title || "Untitled Case"}
-      </Text>
+    return (
 
-      <Text
-        numberOfLines={3}
-        style={styles.preview}
+      <TouchableOpacity
+        style={styles.card}
+
+        activeOpacity={0.85}
+
+        onPress={() =>
+
+          router.push({
+
+            pathname:
+              "/CaseDetails",
+
+            params: {
+              caseId:
+                item.caseId,
+            },
+          })
+        }
       >
-        {fact
-        ?fact
-          : "No summary available"}
-      </Text>
 
-      <Text style={styles.date}>
-        {new Date(
-          item.createdAt
-        ).toLocaleString()}
-      </Text>
+        <View style={styles.badge}>
 
-    </TouchableOpacity>
-  );
-};
+          <Text style={styles.badgeText}>
+            AI ANALYZED
+          </Text>
+
+        </View>
+
+        <Text style={styles.title}>
+          {item.title ||
+            "Untitled Case"}
+        </Text>
+
+        <Text
+          style={styles.preview}
+          numberOfLines={3}
+        >
+          {fact
+            ? fact
+            : "No summary available"}
+        </Text>
+
+        <Text style={styles.date}>
+          {new Date(
+            item.createdAt
+          ).toLocaleString()}
+        </Text>
+
+      </TouchableOpacity>
+    );
+  };
+
+  /* ---------------- UI ---------------- */
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* <Navbar /> */}
 
-      <View style={styles.container}>
-        <Text style={styles.heading}>📂 Case History</Text>
+    <View style={styles.container}>
 
-        {loading ? (
-          <ActivityIndicator size="large" />
-        ) : (
-          <FlatList
-            data={data}
-            keyExtractor={(item) => item.caseId}
-            renderItem={renderItem}
-            ListEmptyComponent={
-<Text style={styles.emptyText}>                No cases found
-              </Text>
-            }
+      <Text style={styles.heading}>
+        📂 Case History
+      </Text>
+
+      {loading ? (
+
+        <View style={styles.loader}>
+
+          <ActivityIndicator
+            size="large"
+            color="#8B5CF6"
           />
-        )}
-      </View>
+
+        </View>
+
+      ) : (
+
+        <FlatList
+          data={data}
+
+          renderItem={renderItem}
+
+          keyExtractor={(
+            item,
+            index
+          ) =>
+
+            item.caseId
+              ? item.caseId.toString()
+              : index.toString()
+          }
+
+          showsVerticalScrollIndicator={
+            false
+          }
+
+          ListEmptyComponent={
+
+            <Text
+              style={styles.emptyText}
+            >
+              No analyzed cases yet.
+              {"\n"}
+              Generate summaries to
+              build your legal workspace.
+            </Text>
+          }
+
+          contentContainerStyle={{
+            paddingBottom: 40,
+          }}
+        />
+      )}
+
     </View>
   );
 }
@@ -133,7 +226,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#020617",
     paddingHorizontal: 18,
-    paddingTop: 20,
+    paddingTop: 24,
   },
 
   heading: {
@@ -143,24 +236,58 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
 
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   card: {
     backgroundColor: "#111827",
+
     borderRadius: 24,
+
     padding: 22,
+
     marginBottom: 18,
 
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.05)",
+
+    borderColor:
+      "rgba(255,255,255,0.05)",
 
     shadowColor: "#000",
+
     shadowOffset: {
       width: 0,
       height: 6,
     },
+
     shadowOpacity: 0.25,
+
     shadowRadius: 10,
 
     elevation: 7,
+  },
+
+  badge: {
+    alignSelf: "flex-start",
+
+    backgroundColor: "#312E81",
+
+    paddingHorizontal: 14,
+
+    paddingVertical: 7,
+
+    borderRadius: 999,
+
+    marginBottom: 14,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 12,
   },
 
   title: {
@@ -182,26 +309,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#312E81",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 999,
-    marginBottom: 14,
-  },
-
-  badgeText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 12,
-  },
-
   emptyText: {
     color: "#94A3B8",
     textAlign: "center",
-    marginTop: 50,
+    marginTop: 80,
     fontSize: 16,
+    lineHeight: 28,
   },
 
 });

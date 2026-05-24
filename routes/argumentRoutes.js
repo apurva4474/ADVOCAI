@@ -103,9 +103,8 @@ ${JSON.stringify(parsedSummary)}
           caseId,
 
           argumentsData:
-            JSON.stringify(
-              parsedArguments
-            ),
+            
+              parsedArguments,
         });
 
       await newArgument.save();
@@ -151,9 +150,8 @@ router.get(
           caseId: item.caseId,
 
           arguments:
-            JSON.parse(
-              item.argumentsData
-            ),
+            
+              item.argumentsData,
 
           createdAt: item.createdAt,
         }));

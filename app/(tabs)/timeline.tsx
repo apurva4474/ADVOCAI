@@ -12,6 +12,7 @@ import {
 
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function TimelineScreen() {
 
@@ -125,7 +126,15 @@ export default function TimelineScreen() {
 
         {/* HERO */}
 
-        <View style={timelineStyles.hero}>
+        <LinearGradient
+  colors={[
+    "#312E81",
+    "#6D28D9",
+    "#9333EA",
+  ]}
+
+  style={timelineStyles.hero}
+>
 
           <Text style={timelineStyles.heading}>
             Legal Case Timeline
@@ -138,8 +147,9 @@ export default function TimelineScreen() {
             analysis.
           </Text>
 
-        </View>
-
+      
+        </LinearGradient>
+          
         {/* CARD */}
 
         <View style={timelineStyles.card}>
@@ -151,8 +161,8 @@ export default function TimelineScreen() {
           {cases.length === 0 ? (
 
             <Text style={timelineStyles.emptyText}>
-              No summarized cases found
-            </Text>
+No analyzed cases yet.
+Generate summaries before creating timelines.            </Text>
 
           ) : (
 
@@ -333,10 +343,15 @@ const timelineStyles = StyleSheet.create({
     paddingBottom: 50,
   },
 
-  hero: {
-    marginTop: 20,
-    marginBottom: 28,
-  },
+ hero: {
+  paddingTop: 40,
+  paddingHorizontal: 24,
+  paddingBottom: 36,
+
+  borderRadius: 30,
+
+  marginBottom: 28,
+},
 
   heading: {
     fontSize: 34,
@@ -424,7 +439,7 @@ const timelineStyles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#000",
+    color: "#fff",
     fontWeight: "800",
     fontSize: 16,
   },

@@ -18,6 +18,12 @@ generateArguments: `${BASE_URL}/generate-arguments`,
 generateTimeline: `${BASE_URL}/generate-timeline`,
 History: `${BASE_URL}/history`,
 dashboardStats: `${BASE_URL}/dashboard-stats`,
+caseDetails: `${BASE_URL}/case-details`,
+getArgumentsByCase:
+  `${BASE_URL}/arguments`,
+
+getTimelineByCase:
+  `${BASE_URL}/timeline`,
 };
 
 export default API;

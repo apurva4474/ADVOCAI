@@ -10,10 +10,10 @@ import {
 } from "react-native";
 
 // import Navbar from "../components/Navbar";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
-
+const router = useRouter();
 export default function ArgumentGenerator() {
 
   const [mode, setMode] = useState<"existing" | "new">("existing");
@@ -86,6 +86,15 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
       });
 
       const data = await res.json();
+      if (!res.ok) {
+
+  alert(
+    data.error ||
+    "Failed to generate arguments"
+  );
+
+  return;
+}
 
       setArgumentsData(data.arguments);
 
@@ -185,7 +194,10 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
 
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyText}>
-                  No cases found
+                  No summarized cases yet.
+  Generate a summary first to
+  create legal arguments.
+
                 </Text>
               </View>
 
@@ -427,7 +439,7 @@ const styles = StyleSheet.create({
   },
 
   activeText: {
-    color: "#000",
+    color: "#fff",
     fontWeight: "700",
     fontSize: 15,
   },
@@ -486,7 +498,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#000",
+    color: "#fff",
     fontWeight: "800",
     fontSize: 16,
   },
@@ -547,6 +559,7 @@ pointChip: {
   pointText: {
     color: "#fff",
     fontWeight: "600",
+    flexShrink: 1,
   },
 
   emptyText: {

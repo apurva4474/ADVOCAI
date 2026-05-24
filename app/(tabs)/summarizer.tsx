@@ -13,12 +13,9 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { useNavigation } from "@react-navigation/native";
-// import Navbar from "../../components/Navbar";
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
 export default function Summarizer() {
-  const navigation = useNavigation<any>();
   const [text, setText] = useState("");
   const [mode, setMode] = useState<"text" | "file">("text");
   const [summary, setSummary] = useState<any>(null);
@@ -26,29 +23,27 @@ export default function Summarizer() {
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<any>(null);
   const router = useRouter();
-  const [processingText, setProcessingText] = useState("Initializing AI...");
-const fadeAnim = useRef(new Animated.Value(0)).current;
-const rotateAnim = useRef(new Animated.Value(0)).current;
 
-  const pickFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
+const pickFile = async () => {
+
+  const result =
+    await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
     });
 
-    if (result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
+  if (
+    result.assets &&
+    result.assets.length > 0
+  ) {
 
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
+    const asset =
+      result.assets[0];
 
-      const fileObj = new File([blob], asset.name, {
-        type: "application/pdf",
-      });
+    setFile(asset);
 
-      setFile(fileObj);
-      setFileName(asset.name);
-    }
-  };
+    setFileName(asset.name);
+  }
+};
 
   // ✨ Summarize
   const handleSummarize = async () => {
@@ -95,52 +90,92 @@ const rotateAnim = useRef(new Animated.Value(0)).current;
 if (mode === "file") {
 
   if (!file) {
+
     alert("Please upload a PDF");
+
     return;
   }
 
   try {
+
     setLoading(true);
 
-    const token = await getToken(); // 🔥 get token
+    // 🔥 GET TOKEN
+
+    const token =
+      await getToken();
 
     if (!token) {
+
       alert("Please login first");
-      router.push({
-  pathname: "/login",
-  params: { redirectTo: "summarizer" },
-});
+
+      router.push("/login");
 
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
+    // 🔥 CREATE FORM DATA
 
-    const res = await fetch(API.uploadPdf, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`, // 🔥 IMPORTANT
-      },
-      body: formData,
-    });
+    const formData =
+      new FormData();
 
-    const data = await res.json();
+    formData.append("file", {
+
+      uri: file.uri,
+
+      name:
+        file.name || "document.pdf",
+
+      type:
+        "application/pdf",
+
+    } as any);
+
+    // 🔥 UPLOAD REQUEST
+
+    const res = await fetch(
+      API.uploadPdf,
+
+      {
+        method: "POST",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+
+        body: formData,
+      }
+    );
+
+    const data =
+      await res.json();
+
+    // 🔥 SUCCESS
 
     if (res.ok) {
+
       setSummary(data.summary);
 
-      // 🔥 OPTIONAL (very good UX)
-      // navigation.navigate("CaseDetails", { caseId: data.caseId });
-
     } else {
-      alert(data.error || "Upload failed");
+
+      alert(
+        data.error ||
+        "Upload failed"
+      );
     }
 
   } catch (err) {
-    console.log(err);
+
+    console.log(
+      "UPLOAD ERROR:",
+      err
+    );
+
     alert("Server error");
+
   } finally {
+
     setLoading(false);
   }
 }

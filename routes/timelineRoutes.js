@@ -113,9 +113,8 @@ ${JSON.stringify(parsedSummary)}
           caseId,
 
           timelineData:
-            JSON.stringify(
-              parsedTimeline
-            ),
+            
+              parsedTimeline,
         });
 
       await newTimeline.save();
@@ -161,9 +160,9 @@ router.get(
           caseId: item.caseId,
 
           timeline:
-            JSON.parse(
-              item.timelineData
-            ),
+            
+              item.timelineData,
+      
 
           createdAt:
             item.createdAt,
@@ -184,5 +183,50 @@ router.get(
     }
   }
 );
+router.get(
+  "/timeline/:caseId",
 
+  authMiddleware,
+
+  async (req, res) => {
+
+    try {
+
+      const timeline =
+        await Timeline.findOne({
+
+          caseId:
+            req.params.caseId,
+
+          userId:
+            req.userId,
+        });
+
+      if (!timeline) {
+
+        return res.status(404).json({
+          error:
+            "Timeline not found",
+        });
+      }
+
+      res.json({
+        timeline:
+          timeline.timelineData,
+      });
+
+    } catch (error) {
+
+      console.log(
+        "GET TIMELINE ERROR:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          error.message,
+      });
+    }
+  }
+);
 module.exports = router;

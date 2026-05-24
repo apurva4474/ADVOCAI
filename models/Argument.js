@@ -14,9 +14,9 @@ const argumentSchema = new mongoose.Schema({
   },
 
   argumentsData: {
-    type: String,
-    required: true,
-  },
+  type: Object,
+  required: true,
+},
 
   createdAt: {
     type: Date,
