@@ -119,7 +119,7 @@ if (mode === "file") {
     const formData =
       new FormData();
 
-    formData.append("file", {
+    formData.append("pdf", {
 
       uri: file.uri,
 
@@ -413,11 +413,11 @@ if (mode === "file") {
 
   </View>
 ) : null}
-    </View>
-
+</View>
   </ScrollView>
 );
 }
+
 
 const styles = StyleSheet.create({
 
@@ -432,6 +432,19 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
 
+  translateButton: {
+  marginTop: 20,
+  backgroundColor: "#2563EB",
+  paddingVertical: 16,
+  borderRadius: 16,
+  alignItems: "center",
+},
+
+translateButtonText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
   hero: {
   paddingTop: 70,
   paddingHorizontal: 22,
