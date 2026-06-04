@@ -52,23 +52,11 @@ const handleTranslate = async () => {
         }
       );
 
-    const data =
-      await response.json();
+    const text = await response.text();
 
-    if (response.ok) {
+console.log("TRANSLATE RESPONSE:", text);
 
-      setTranslatedSummary(
-        data.translation
-      );
-
-    } else {
-
-      Alert.alert(
-        "Error",
-        data.error
-      );
-    }
-
+return;
   } catch (error) {
 
     console.log(
