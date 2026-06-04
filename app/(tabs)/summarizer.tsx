@@ -1,9 +1,9 @@
 import * as DocumentPicker from "expo-document-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 
 import { API } from "../../constants/api";
 import { getToken } from "../../utils/auth";
@@ -70,13 +69,22 @@ const pickFile = async () => {
           }),
         });
 
-        const data = await res.json();
+       console.log("STATUS:", res.status);
 
-        if (res.ok) {
-          setSummary(data.summary);
-        } else {
-          alert(data.error || "Error");
-        }
+const raw = await res.text();
+
+console.log("RAW RESPONSE:", raw);
+
+if (res.ok) {
+  try {
+    const data = JSON.parse(raw);
+    setSummary(data.summary);
+  } catch (e) {
+    console.log("PARSE ERROR:", e);
+  }
+} else {
+  alert(raw);
+}
 
       } catch (err) {
         console.log(err);
@@ -309,7 +317,20 @@ if (mode === "file") {
             </Text>
           )}
         </TouchableOpacity>
-
+<TouchableOpacity
+  onPress={() =>
+    router.push({
+      pathname: "/translate",
+      params: {
+        summary: JSON.stringify(summary),
+      },
+    })
+  }
+>
+  <Text>
+    🌐 Translate Summary
+  </Text>
+</TouchableOpacity>
       </View>
 
       {/* RESULT */}
@@ -410,6 +431,7 @@ if (mode === "file") {
         )
       )}
     </View>
+
 
   </View>
 ) : null}

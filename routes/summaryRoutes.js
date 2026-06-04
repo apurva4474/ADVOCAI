@@ -99,7 +99,79 @@ router.get(
     }
   }
 );
+router.post(
+  "/translate",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { summary, language } = req.body;
 
+      if (!summary || !language) {
+        return res.status(400).json({
+          error: "Summary and language are required",
+        });
+      }
+
+      const prompt = `
+Translate the following legal summary into ${language}.
+
+Keep the structure exactly the same.
+Translate all content accurately.
+
+Summary:
+${JSON.stringify(summary, null, 2)}
+
+Return ONLY valid JSON.
+`;
+
+      const aiResponse =
+        await groq.chat.completions.create({
+          messages: [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.2,
+        });
+
+      const rawText =
+        aiResponse.choices[0].message.content;
+
+      const cleanJson = rawText
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      let translatedSummary;
+
+      try {
+        translatedSummary =
+          JSON.parse(cleanJson);
+      } catch {
+        return res.status(500).json({
+          error: "Translation parsing failed",
+        });
+      }
+
+      res.json({
+        translation: translatedSummary,
+      });
+
+    } catch (error) {
+
+      console.log(
+        "TRANSLATION ERROR:",
+        error
+      );
+
+      res.status(500).json({
+        error: error.message,
+      });
+    }
+  }
+);
 /* ---------------- TEXT SUMMARIZER ---------------- */
 
 router.post(

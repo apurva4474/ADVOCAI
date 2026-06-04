@@ -30,7 +30,12 @@ router.post(
   async (req, res) => {
     try {
       // READ PDF
-
+      console.log("REQ FILE:", req.file);
+      if (!req.file) {
+        return res.status(400).json({
+          error: "No file received",
+        });
+      }
       const dataBuffer = fs.readFileSync(
         req.file.path
       );

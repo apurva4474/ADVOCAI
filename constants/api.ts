@@ -14,6 +14,7 @@ export const API = {
   translate: `${BASE_URL}/translate`,
   arguments: `${BASE_URL}/arguments`,
   getCases: `${BASE_URL}/cases`,
+  translate: `${BASE_URL}/translate`,
   getCaseById: `${BASE_URL}/cases`,
 generateArguments: `${BASE_URL}/generate-arguments`,
 generateTimeline: `${BASE_URL}/generate-timeline`,
