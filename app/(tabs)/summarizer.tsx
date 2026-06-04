@@ -22,7 +22,8 @@ export default function Summarizer() {
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<any>(null);
   const router = useRouter();
-
+  const [caseId, setCaseId] =
+  useState("");
 const pickFile = async () => {
 
   const result =
@@ -79,6 +80,9 @@ if (res.ok) {
   try {
     const data = JSON.parse(raw);
     setSummary(data.summary);
+    if (data.caseId) {
+      setCaseId(data.caseId);
+    }
   } catch (e) {
     console.log("PARSE ERROR:", e);
   }
@@ -317,20 +321,24 @@ if (mode === "file") {
             </Text>
           )}
         </TouchableOpacity>
-<TouchableOpacity
-  onPress={() =>
-    router.push({
-      pathname: "/translate",
-      params: {
-        summary: JSON.stringify(summary),
-      },
-    })
-  }
->
-  <Text>
-    🌐 Translate Summary
-  </Text>
-</TouchableOpacity>
+{summary && (
+  <TouchableOpacity
+    style={styles.translateButton}
+    onPress={() =>
+      router.push({
+        pathname: "/translate",
+        params: {
+          summary: JSON.stringify(summary),
+          caseId,
+        },
+      })
+    }
+  >
+    <Text style={styles.translateButtonText}>
+      🌐 Translate Summary
+    </Text>
+  </TouchableOpacity>
+)}
       </View>
 
       {/* RESULT */}
@@ -454,19 +462,31 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
 
-  translateButton: {
-  marginTop: 20,
-  backgroundColor: "#2563EB",
-  paddingVertical: 16,
+translateButton: {
+  backgroundColor: "#14B8A6",
+  paddingVertical: 14,
   borderRadius: 16,
   alignItems: "center",
+  marginTop: 16,
+
+  shadowColor: "#14B8A6",
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+  elevation: 6,
 },
 
 translateButtonText: {
-  color: "#fff",
-  fontSize: 16,
+  color: "#FFFFFF",
+  fontSize: 15,
   fontWeight: "700",
+  letterSpacing: 0.5,
 },
+
+
   hero: {
   paddingTop: 70,
   paddingHorizontal: 22,

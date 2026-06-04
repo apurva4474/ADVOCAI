@@ -26,6 +26,8 @@ getArgumentsByCase:
 
 getTimelineByCase:
   `${BASE_URL}/timeline`,
+getTranslationsByCase:
+  `${BASE_URL}/translations`,
 };
 
 export default API;

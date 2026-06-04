@@ -12,6 +12,7 @@ import { useLocalSearchParams } from "expo-router";
 import { getToken } from "@/utils/auth";
 import { API } from "../constants/api";
 export default function TranslateScreen() {
+  
   const params = useLocalSearchParams();
   const summaryData =
   params.summary
@@ -19,6 +20,8 @@ export default function TranslateScreen() {
         params.summary as string
       )
     : null;
+    const caseId =
+  params.caseId as string;
 const [translatedSummary, setTranslatedSummary] =
   useState<any>(null);
 const handleTranslate = async () => {
@@ -44,6 +47,7 @@ const handleTranslate = async () => {
           },
 
           body: JSON.stringify({
+            caseId,
             summary:
               summaryData,
 

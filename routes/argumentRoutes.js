@@ -129,7 +129,44 @@ ${JSON.stringify(parsedSummary)}
 );
 
 /* ---------------- GET ARGUMENT HISTORY ---------------- */
+router.get(
+  "/arguments/:caseId",
+  authMiddleware,
+  async (req, res) => {
+    try {
 
+      const argument =
+        await Argument.findOne({
+          caseId: req.params.caseId,
+          userId: req.userId,
+        }).sort({
+          createdAt: -1,
+        });
+
+      if (!argument) {
+        return res.status(404).json({
+          error: "Arguments not found",
+        });
+      }
+
+      res.json({
+        arguments:
+          argument.argumentsData,
+      });
+
+    } catch (error) {
+
+      console.log(
+        "GET ARGUMENTS ERROR:",
+        error
+      );
+
+      res.status(500).json({
+        error: error.message,
+      });
+    }
+  }
+);
 router.get(
   "/arguments-history",
   authMiddleware,

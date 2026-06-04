@@ -50,6 +50,9 @@ export default function CaseDetails() {
   const [timeline,
     setTimeline] =
     useState<any[]>([]);
+  const [translations,
+  setTranslations] =
+  useState<any[]>([]);
 
   /* ---------------- FETCH DATA ---------------- */
 
@@ -138,6 +141,28 @@ export default function CaseDetails() {
           timelineJson.timeline
         );
       }
+      /* TRANSLATIONS */
+
+const translationRes =
+  await fetch(
+    `${API.getTranslationsByCase}/${caseId}`,
+    {
+      headers: {
+        Authorization:
+          `Bearer ${token}`,
+      },
+    }
+  );
+
+if (translationRes.ok) {
+
+  const translationJson =
+    await translationRes.json();
+
+  setTranslations(
+    translationJson
+  );
+}
 
     } catch (error) {
 
@@ -428,7 +453,28 @@ export default function CaseDetails() {
                     • {item}
                   </Text>
                 )
-              )}
+              )
+              }
+              <Text style={styles.subHeading}>
+  Key Legal Points
+</Text>
+
+{argumentsData
+  ?.keyLegalPoints
+  ?.map(
+    (
+      item: string,
+      index: number
+    ) => (
+
+      <Text
+        key={index}
+        style={styles.point}
+      >
+        • {item}
+      </Text>
+    )
+  )}
 
           </>
 
@@ -523,8 +569,54 @@ export default function CaseDetails() {
         )}
 
       </View>
+        <View style={styles.card}>
 
+  <Text style={styles.sectionTitle}>
+    🌐 Translations
+  </Text>
+
+  {translations.length > 0 ? (
+
+    translations.map(
+      (
+        item: any,
+        index: number
+      ) => (
+
+        <View
+          key={index}
+          style={{
+            marginTop: 16,
+          }}
+        >
+
+          <Text
+            style={styles.subHeading}
+          >
+            {item.language}
+          </Text>
+
+          <Text
+            style={styles.text}
+          >
+            {item.translatedText}
+          </Text>
+
+        </View>
+      )
+    )
+
+  ) : (
+
+    <Text style={styles.empty}>
+      No translations available.
+    </Text>
+
+  )}
+
+</View>
     </ScrollView>
+    
   );
 }
 

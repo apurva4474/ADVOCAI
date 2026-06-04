@@ -1,8 +1,8 @@
 const express = require("express");
-
 const Groq = require("groq-sdk");
 
 const Summary = require("../models/Summary");
+const Translation = require("../models/Translation");
 
 const authMiddleware = require("../middleware/auth");
 
@@ -12,8 +12,37 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-/* ---------------- GET ALL SUMMARIES ---------------- */
 
+
+
+/* ---------------- GET ALL SUMMARIES ---------------- */
+router.get(
+  "/translations/:caseId",
+  authMiddleware,
+  async (req, res) => {
+    try {
+
+      const translations =
+        await Translation.find({
+          caseId:
+            req.params.caseId,
+          userId:
+            req.userId,
+        }).sort({
+          createdAt: -1,
+        });
+
+      res.json(translations);
+
+    } catch (error) {
+
+      res.status(500).json({
+        error:
+          error.message,
+      });
+    }
+  }
+);
 router.get(
   "/summaries",
   authMiddleware,
@@ -104,16 +133,20 @@ router.post(
   authMiddleware,
   async (req, res) => {
     try {
-      const { summary, language } = req.body;
+
+      const {
+        caseId,
+        summary,
+        language,
+      } = req.body;
 
       if (!summary || !language) {
         return res.status(400).json({
-          error: "Summary and language are required",
+          error:
+            "Summary and language are required",
         });
       }
-      console.log("TRANSLATE REQUEST");
-console.log("LANGUAGE:", language);
-console.log("SUMMARY:", summary);
+
       const prompt = `
 Translate the following legal summary into ${language}.
 
@@ -134,7 +167,10 @@ Return ONLY valid JSON.
               content: prompt,
             },
           ],
-          model: "llama-3.3-70b-versatile",
+
+          model:
+            "llama-3.3-70b-versatile",
+
           temperature: 0.2,
         });
 
@@ -149,16 +185,39 @@ Return ONLY valid JSON.
       let translatedSummary;
 
       try {
+
         translatedSummary =
           JSON.parse(cleanJson);
+
       } catch {
+
         return res.status(500).json({
-          error: "Translation parsing failed",
+          error:
+            "Translation parsing failed",
         });
       }
 
+      // SAVE TRANSLATION
+
+      const newTranslation =
+        new Translation({
+          userId: req.userId,
+
+          caseId,
+
+          language,
+
+          translatedText:
+            JSON.stringify(
+              translatedSummary
+            ),
+        });
+
+      await newTranslation.save();
+
       res.json({
-        translation: translatedSummary,
+        translation:
+          translatedSummary,
       });
 
     } catch (error) {
@@ -169,7 +228,8 @@ Return ONLY valid JSON.
       );
 
       res.status(500).json({
-        error: error.message,
+        error:
+          error.message,
       });
     }
   }
