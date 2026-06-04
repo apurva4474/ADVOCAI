@@ -317,7 +317,20 @@ if (mode === "file") {
             </Text>
           )}
         </TouchableOpacity>
-
+<TouchableOpacity
+  onPress={() =>
+    router.push({
+      pathname: "/translate",
+      params: {
+        summary: JSON.stringify(summary),
+      },
+    })
+  }
+>
+  <Text>
+    🌐 Translate Summary
+  </Text>
+</TouchableOpacity>
       </View>
 
       {/* RESULT */}
@@ -418,6 +431,7 @@ if (mode === "file") {
         )
       )}
     </View>
+
 
   </View>
 ) : null}

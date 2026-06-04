@@ -30,7 +30,7 @@ router.post(
   async (req, res) => {
     try {
       // READ PDF
-
+      console.log("REQ FILE:", req.file);
       const dataBuffer = fs.readFileSync(
         req.file.path
       );
