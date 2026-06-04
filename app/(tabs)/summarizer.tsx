@@ -119,7 +119,7 @@ if (mode === "file") {
     const formData =
       new FormData();
 
-    formData.append("pdf", {
+    formData.append("file", {
 
       uri: file.uri,
 

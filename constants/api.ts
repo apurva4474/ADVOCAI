@@ -11,6 +11,7 @@ export const API = {
   cases: `${BASE_URL}/cases`,
   getSummaries: `${BASE_URL}/summaries`,
   analyzeCase: `${BASE_URL}/analyze-case`,
+  translate: `${BASE_URL}/translate`,
   arguments: `${BASE_URL}/arguments`,
   getCases: `${BASE_URL}/cases`,
   getCaseById: `${BASE_URL}/cases`,
