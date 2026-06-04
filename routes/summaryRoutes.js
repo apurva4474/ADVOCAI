@@ -111,7 +111,9 @@ router.post(
           error: "Summary and language are required",
         });
       }
-
+      console.log("TRANSLATE REQUEST");
+console.log("LANGUAGE:", language);
+console.log("SUMMARY:", summary);
       const prompt = `
 Translate the following legal summary into ${language}.
 
