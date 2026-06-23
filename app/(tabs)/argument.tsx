@@ -71,6 +71,14 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
       const token = await getToken();
 
       const selectedCase = cases[selectedIndex];
+      console.log("SELECTED CASE:");
+console.log(selectedCase);
+
+console.log(
+  "CASE ID BEING SENT:",
+  selectedCase?._id ||
+  selectedCase?.caseId
+);
 
       const res = await fetch(API.generateArguments, {
         method: "POST",
@@ -232,7 +240,7 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
                     </Text>
 
                     <Text
-                      numberOfLines={4}
+                      numberOfLines={6}
                       style={styles.preview}
                     >
                       {item?.summary?.facts?.[0] ||

@@ -94,7 +94,7 @@ ${JSON.stringify(parsedSummary)}
           keyLegalPoints: [],
         };
       }
-
+console.log("GENERATE ARGUMENT CASE:", caseId);
       // SAVE ARGUMENTS
 
       const newArgument =
@@ -108,7 +108,8 @@ ${JSON.stringify(parsedSummary)}
         });
 
       await newArgument.save();
-
+        console.log("ARGUMENT SAVED");
+console.log(newArgument);
       res.json({
         caseId,
         arguments: parsedArguments,

@@ -9,20 +9,14 @@ import {
   View,
 } from "react-native";
 
-import { router, useLocalSearchParams }
-  from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
-import { Ionicons }
-  from "@expo/vector-icons";
 
-import { LinearGradient }
-  from "expo-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient";
 
-import { API }
-  from "../constants/api";
+import { API } from "../constants/api";
 
-import { getToken }
-  from "../utils/auth";
+import { getToken } from "../utils/auth";
 
 export default function CaseDetails() {
 
@@ -89,7 +83,12 @@ export default function CaseDetails() {
         await caseRes.json();
 
       if (caseRes.ok) {
+
         setCaseData(caseJson);
+        console.log(
+  "CASE DETAILS CASE DATA:",
+  caseJson
+);
       }
 
       /* ARGUMENTS */
@@ -111,10 +110,26 @@ export default function CaseDetails() {
 
         const argJson =
           await argRes.json();
+        console.log(
+  "ARG RESPONSE:",
+  JSON.stringify(argJson, null, 2)
+);
 
+console.log(
+  "ARG DATA:",
+  JSON.stringify(
+    argJson.arguments,
+    null,
+    2
+  )
+);
         setArgumentsData(
           argJson.arguments
         );
+        console.log(
+  "SETTING ARGS:",
+  argJson.arguments
+);
       }
 
       /* TIMELINE */
@@ -361,20 +376,69 @@ if (translationRes.ok) {
 
       {/* SUMMARY */}
 
-      <View style={styles.card}>
+   <View style={styles.card}>
 
-        <Text style={styles.sectionTitle}>
-          📄 Case Summary
-        </Text>
+  <Text style={styles.sectionTitle}>
+    📄 Summary
+  </Text>
 
-        <Text style={styles.text}>
-          {caseData?.summary
-            ?.overview ||
+  <Text style={styles.subHeading}>
+    Facts
+  </Text>
 
-            "No summary available"}
-        </Text>
+  {caseData?.summary?.facts?.map(
+    (fact: string, index: number) => (
+      <Text
+        key={index}
+        style={styles.point}
+      >
+        • {fact}
+      </Text>
+    )
+  )}
 
-      </View>
+  <Text style={styles.subHeading}>
+    Issues
+  </Text>
+
+  {caseData?.summary?.issues?.map(
+    (issue: string, index: number) => (
+      <Text
+        key={index}
+        style={styles.point}
+      >
+        • {issue}
+      </Text>
+    )
+  )}
+
+  <Text style={styles.subHeading}>
+    Judgement
+  </Text>
+
+  <Text style={styles.text}>
+    {caseData?.summary?.judgement}
+  </Text>
+
+  <Text style={styles.subHeading}>
+    Legal Principles
+  </Text>
+
+  {caseData?.summary?.legalPrinciples?.map(
+    (
+      item: string,
+      index: number
+    ) => (
+      <Text
+        key={index}
+        style={styles.point}
+      >
+        • {item}
+      </Text>
+    )
+  )}
+
+</View>
 
       {/* ARGUMENTS */}
 
