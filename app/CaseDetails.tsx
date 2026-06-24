@@ -102,10 +102,6 @@ const [chatLoading,
       if (caseRes.ok) {
 
         setCaseData(caseJson);
-        console.log(
-  "CASE DETAILS CASE DATA:",
-  caseJson
-);
       }
 
       /* ARGUMENTS */
@@ -127,26 +123,13 @@ const [chatLoading,
 
         const argJson =
           await argRes.json();
-        console.log(
-  "ARG RESPONSE:",
-  JSON.stringify(argJson, null, 2)
-);
+        
 
-console.log(
-  "ARG DATA:",
-  JSON.stringify(
-    argJson.arguments,
-    null,
-    2
-  )
-);
+
         setArgumentsData(
           argJson.arguments
         );
-        console.log(
-  "SETTING ARGS:",
-  argJson.arguments
-);
+       
       }
 
       /* TIMELINE */
@@ -446,6 +429,37 @@ const askCaseQuestion =
         </Text>
 
       </LinearGradient>
+      <View style={styles.assistantCard}>
+
+  <Ionicons
+    name="person-circle-outline"
+    size={40}
+    color="#38BDF8"
+  />
+
+  <View style={{ flex: 1 }}>
+
+    <Text style={styles.assistantTitle}>
+      ADVOCAI Assistant
+    </Text>
+
+    <Text style={styles.assistantSub}>
+      Ask anything about this case
+    </Text>
+
+  </View>
+
+  <TouchableOpacity
+    onPress={() =>
+      setChatVisible(true)
+    }
+  >
+    <Text style={styles.askNow}>
+      Ask
+    </Text>
+  </TouchableOpacity>
+
+</View>
 
       {/* SUMMARY */}
 
@@ -754,19 +768,6 @@ const askCaseQuestion =
   )}
 
 </View>
-<TouchableOpacity
-  style={styles.chatFab}
-  onPress={() =>
-    setChatVisible(true)
-  }
->
-  <Ionicons
-    name="chatbubble"
-    size={28}
-    color="#fff"
-  />
-</TouchableOpacity>
-
 <Modal
   visible={chatVisible}
   animationType="slide"
@@ -870,7 +871,24 @@ const styles = StyleSheet.create({
     borderColor:
       "rgba(255,255,255,0.05)",
   },
+  botHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+},
 
+botTitle: {
+  color: "#fff",
+  fontSize: 20,
+  fontWeight: "700",
+  marginLeft: 10,
+},
+
+botSub: {
+  color: "#94A3B8",
+  marginLeft: 10,
+  marginTop: 2,
+},
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -996,5 +1014,29 @@ answer: {
   color: "#fff",
   marginTop: 20,
   lineHeight: 24,
+},
+assistantCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#1E293B",
+  padding: 15,
+  borderRadius: 16,
+  marginBottom: 20,
+},
+
+assistantTitle: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
+
+assistantSub: {
+  color: "#94A3B8",
+  fontSize: 12,
+},
+
+askNow: {
+  color: "#38BDF8",
+  fontWeight: "700",
 },
 });

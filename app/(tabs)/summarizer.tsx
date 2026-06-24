@@ -169,7 +169,7 @@ if (mode === "file") {
       setSummary(data.summary);
       if (data.caseId) {
         setCaseId(data.caseId);
-      console.log("PDF CASE ID:", data.caseId);
+    
       }
 
     } else {

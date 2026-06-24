@@ -1,3 +1,6 @@
+import axios from "axios";
+import LottieView from "lottie-react-native";
+import { useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -8,9 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import axios from "axios";
-import { useState } from "react";
 
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,7 +23,9 @@ import { API } from "@/constants/api";
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showSuccess,
+  setShowSuccess] =
+  useState(false);
   const handleLogin = async () => {
     try {
       const response = await axios.post(API.login, {
@@ -50,9 +52,13 @@ export default function LoginScreen() {
         data.token
       );
 
-      Alert.alert("Success", "Login successful");
+      setShowSuccess(true);
 
-      router.replace("/");
+setTimeout(() => {
+
+  router.replace("/");
+
+}, 5000);
     } catch (error: any) {
   console.log("LOGIN ERROR:");
   console.log(error.response?.data);
@@ -63,7 +69,48 @@ export default function LoginScreen() {
   );
 }
   };
+  if (showSuccess) {
 
+  return (
+
+    <LinearGradient
+      colors={[
+        "#020617",
+        "#111827",
+        "#1e1b4b",
+      ]}
+      style={styles.successContainer}
+    >
+
+
+      <Text
+        style={styles.successTitle}
+      >
+        Welcome Back!
+      </Text>
+
+      <Text
+        style={styles.successSub}
+      >
+        Accessing your legal workspace...
+      </Text>
+        <LottieView
+  source={
+    require(
+      "../assets/animations/robot.json"
+    )
+  }
+  autoPlay
+  loop
+  style={{
+    width: 400,
+    height: 400,
+  }}
+/>
+
+    </LinearGradient>
+  );
+}
   return (
     <LinearGradient
       colors={["#020617", "#111827", "#1e1b4b"]}
@@ -251,4 +298,22 @@ const styles = StyleSheet.create({
     marginTop: 24,
     fontSize: 15,
   },
+  successContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+successTitle: {
+  color: "#FFFFFF",
+  fontSize: 32,
+  fontWeight: "800",
+  marginTop: 20,
+},
+
+successSub: {
+  color: "#CBD5E1",
+  marginTop: 12,
+  fontSize: 16,
+},
 });

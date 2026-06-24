@@ -41,6 +41,7 @@
     "express": "^5.2.1",
     "groq-sdk": "^1.1.1",
     "jsonwebtoken": "^9.0.3",
+    "lottie-react-native": "~7.3.1",
     "mongoose": "^8.23.0",
     "multer": "^2.1.1",
     "pdf-parse": "^1.1.1",

@@ -1,5 +1,4 @@
 import { getToken } from "@/utils/auth";
-import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -11,33 +10,41 @@ import {
   View,
 } from "react-native";
 import { API } from "../constants/api";
+
+interface TranslateScreenParams {
+  summary?: string;
+  caseId?: string;
+  [key: string]: string | undefined;
+}
+
+type LanguageOption = "Hindi" | "Kannada" | "Tamil";
+
+interface TranslationResponse {
+  translation: unknown;
+  error?: string;
+}
+
 export default function TranslateScreen() {
   
-  const params = useLocalSearchParams();
-  const summaryData =
-  params.summary
-    ? JSON.parse(
-        params.summary as string
-      )
-    : null;
-    const caseId =
-  params.caseId as string;
-  console.log("PARAMS:", params);
+  const params = useLocalSearchParams() as TranslateScreenParams;
+  const summaryData: unknown | null =
+    params.summary
+      ? JSON.parse(params.summary)
+      : null;
+  const caseId: string = params.caseId as string;
+  
 const [translatedSummary, setTranslatedSummary] =
-  useState<any>(null);
-const handleTranslate = async () => {
+  useState<unknown | null>(null);
+const handleTranslate = async (): Promise<void> => {
   try {
 
-    console.log("STEP 1");
+  
 
     setLoading(true);
 
     const token = await getToken();
 
-    console.log("STEP 2");
-    console.log("TRANSLATE URL:", API.translate);
-console.log("CASE ID:", caseId);
-console.log("LANGUAGE:", language);
+    
     const response = await fetch(
       API.translate,
       {
@@ -53,15 +60,14 @@ console.log("LANGUAGE:", language);
         }),
       }
       
-
+      
     );
 
-    console.log("STEP 3");
+  
 
-    const data = await response.json();
+    const data = (await response.json()) as TranslationResponse;
 
-    console.log("STEP 4");
-    console.log("TRANSLATE RESPONSE:", data);
+    
 
     if (response.ok) {
 
@@ -80,9 +86,7 @@ console.log("LANGUAGE:", language);
 
   } catch (error) {
 
-    console.log(
-      "STEP ERROR"
-    );
+    
 
     console.log(error);
 
@@ -101,9 +105,9 @@ console.log("LANGUAGE:", language);
   }
 };
 const [loading, setLoading] =
-  useState(false);
+  useState<boolean>(false);
   const [language, setLanguage] =
-    useState("Hindi");
+    useState<LanguageOption>("Hindi");
 
   return (
   <ScrollView
@@ -140,27 +144,31 @@ const [loading, setLoading] =
       </Text>
 
       <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={language}
-          onValueChange={(value) =>
-            setLanguage(value)
-          }
-          style={styles.picker}
-        >
-          <Picker.Item
-            label="🇮🇳 Hindi"
-            value="Hindi"
-          />
-          <Picker.Item
-            label="🌿 Kannada"
-            value="Kannada"
-          />
-          <Picker.Item
-            label="🔥 Tamil"
-            value="Tamil"
-          />
-        </Picker>
-      </View>
+        {(["Hindi", "Kannada", "Tamil"] as LanguageOption[]).map(
+          (option) => (
+            <TouchableOpacity
+              key={option}
+              style={[
+                styles.button,
+                {
+                  backgroundColor:
+                    language === option ? "#2563EB" : "#334155",
+                  marginBottom: 10,
+                  paddingVertical: 14,
+                },
+              ]}
+              onPress={() => setLanguage(option)}
+            >
+              <Text style={styles.buttonText}>
+                {option === "Hindi"
+                  ? "🇮🇳 Hindi"
+                  : option === "Kannada"
+                  ? "🌿 Kannada"
+                  : "🔥 Tamil"}
+              </Text>
+            </TouchableOpacity>
+          )
+        )}
     </View>
 
     {/* Translate Button */}
@@ -193,7 +201,7 @@ const [loading, setLoading] =
   : "Translation will appear here..."}
       </Text>
     </View>
-
+</View>
   </ScrollView>
 );
 }

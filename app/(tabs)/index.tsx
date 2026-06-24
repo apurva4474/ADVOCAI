@@ -585,7 +585,7 @@ const [logoutVisible,
           </Text>
 
         </View>
-
+        
         <Ionicons
           name="sparkles"
           size={42}
@@ -593,7 +593,26 @@ const [logoutVisible,
         />
 
       </LinearGradient>
-
+        <View style={styles.disclaimerCard}>
+        
+          <Text style={styles.disclaimerTitle}>
+            ⚖️ Educational Use Only
+          </Text>
+        
+          <Text style={styles.disclaimerText}>
+            ADVOCAI is an AI-powered legal research and
+            learning tool. All summaries, arguments,
+            timelines, translations, and AI responses
+            are generated automatically and may contain
+            inaccuracies. The information provided
+            should not be considered legal advice,
+            legal opinion, or admissible evidence in
+            any court of law. Always verify information
+            with official legal documents and qualified
+            legal professionals.
+          </Text>
+        
+        </View>
     </ScrollView>
   );
 }
@@ -637,7 +656,27 @@ modalTitle: {
 
   marginTop: 18,
 },
+disclaimerCard: {
+  backgroundColor: "#1E293B",
+  borderRadius: 16,
+  padding: 16,
+  marginTop: 20,
+  borderLeftWidth: 4,
+  borderLeftColor: "#F59E0B",
+},
 
+disclaimerTitle: {
+  color: "#FBBF24",
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 8,
+},
+
+disclaimerText: {
+  color: "#CBD5E1",
+  lineHeight: 22,
+  fontSize: 13,
+},
 modalText: {
   color: "#CBD5E1",
 

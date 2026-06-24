@@ -32,7 +32,7 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
 
       const token = await getToken();
 
-      console.log("TOKEN:", token);
+      
 
       const res = await fetch(API.getCases, {
         headers: {
@@ -42,7 +42,7 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
 
       const data = await res.json();
 
-      console.log("CASES RESPONSE:", data);
+     
 
       // SAFE SET
       setCases(Array.isArray(data) ? data : []);
@@ -71,14 +71,7 @@ const [argumentsData, setArgumentsData] = useState<any>(null);
       const token = await getToken();
 
       const selectedCase = cases[selectedIndex];
-      console.log("SELECTED CASE:");
-console.log(selectedCase);
-
-console.log(
-  "CASE ID BEING SENT:",
-  selectedCase?._id ||
-  selectedCase?.caseId
-);
+  
 
       const res = await fetch(API.generateArguments, {
         method: "POST",
