@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { getToken } from "@/utils/auth";
 import { Picker } from "@react-native-picker/picker";
 import { useLocalSearchParams } from "expo-router";
-import { getToken } from "@/utils/auth";
+import React, { useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { API } from "../constants/api";
 export default function TranslateScreen() {
   
@@ -27,58 +27,59 @@ const [translatedSummary, setTranslatedSummary] =
 const handleTranslate = async () => {
   try {
 
+    console.log("STEP 1");
+
     setLoading(true);
 
-    const token =
-      await getToken();
+    const token = await getToken();
 
-    const response =
-      await fetch(
-        API.translate,
-        {
-          method: "POST",
+    console.log("STEP 2");
 
-          headers: {
-            "Content-Type":
-              "application/json",
+    const response = await fetch(
+      API.translate,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          caseId,
+          summary: summaryData,
+          language,
+        }),
+      }
+    );
 
-            Authorization:
-              `Bearer ${token}`,
-          },
-
-          body: JSON.stringify({
-            caseId,
-            summary:
-              summaryData,
-
-            language,
-          }),
-        }
-      );
+    console.log("STEP 3");
 
     const data = await response.json();
 
-console.log("TRANSLATE RESPONSE:", data);
+    console.log("STEP 4");
+    console.log("TRANSLATE RESPONSE:", data);
 
-if (response.ok) {
+    if (response.ok) {
 
-  setTranslatedSummary(
-    data.translation
-  );
+      setTranslatedSummary(
+        data.translation
+      );
 
-} else {
+    } else {
 
-  Alert.alert(
-    "Error",
-    data.error || "Translation failed"
-  );
-}
+      Alert.alert(
+        "Error",
+        data.error ||
+          "Translation failed"
+      );
+    }
+
   } catch (error) {
 
     console.log(
-      "TRANSLATE ERROR:",
-      error
+      "STEP ERROR"
     );
+
+    console.log(error);
 
     Alert.alert(
       "Error",
@@ -86,6 +87,10 @@ if (response.ok) {
     );
 
   } finally {
+
+    console.log(
+      "STEP FINALLY"
+    );
 
     setLoading(false);
   }

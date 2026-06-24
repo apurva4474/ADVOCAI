@@ -133,13 +133,13 @@ router.post(
   authMiddleware,
   async (req, res) => {
     try {
-
+      console.log("T1");
       const {
         caseId,
         summary,
         language,
       } = req.body;
-
+      console.log("T2", caseId, summary, language);
       if (!summary || !language) {
         return res.status(400).json({
           error:
@@ -158,7 +158,7 @@ ${JSON.stringify(summary, null, 2)}
 
 Return ONLY valid JSON.
 `;
-
+      console.log("T3");
       const aiResponse =
         await groq.chat.completions.create({
           messages: [
@@ -173,7 +173,7 @@ Return ONLY valid JSON.
 
           temperature: 0.2,
         });
-
+console.log("T4");
       const rawText =
         aiResponse.choices[0].message.content;
 
@@ -188,7 +188,7 @@ Return ONLY valid JSON.
 
         translatedSummary =
           JSON.parse(cleanJson);
-
+        console.log("TRANSLATED SUMMARY:", translatedSummary);
       } catch {
 
         return res.status(500).json({
