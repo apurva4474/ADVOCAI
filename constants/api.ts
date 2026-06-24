@@ -23,7 +23,8 @@ dashboardStats: `${BASE_URL}/dashboard-stats`,
 caseDetails: `${BASE_URL}/case-details`,
 getArgumentsByCase:
   `${BASE_URL}/arguments`,
-
+caseChat:
+`${BASE_URL}/case-chat`,
 getTimelineByCase:
   `${BASE_URL}/timeline`,
 getTranslationsByCase:

@@ -14,6 +14,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 
 
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { API } from "../constants/api";
@@ -739,6 +740,7 @@ const askCaseQuestion =
           </Text>
 
         </View>
+
       )
 
     )
@@ -752,6 +754,19 @@ const askCaseQuestion =
   )}
 
 </View>
+<TouchableOpacity
+  style={styles.chatFab}
+  onPress={() =>
+    setChatVisible(true)
+  }
+>
+  <Ionicons
+    name="chatbubble"
+    size={28}
+    color="#fff"
+  />
+</TouchableOpacity>
+
 <Modal
   visible={chatVisible}
   animationType="slide"
@@ -790,6 +805,9 @@ const askCaseQuestion =
         {answer}
       </Text>
     </ScrollView>
+
+
+
 
     <TouchableOpacity
       onPress={() =>
