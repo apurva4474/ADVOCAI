@@ -220,17 +220,14 @@ Return ONLY valid JSON.
           translatedSummary,
       });
 
-    } catch (error) {
+    }  catch (error) {
 
-      console.log(
-        "TRANSLATION ERROR:",
-        error
-      );
-
-      res.status(500).json({
-        error:
-          error.message,
-      });
+  console.log("========== TRANSLATION ERROR ==========");
+console.log(error);
+console.log("MESSAGE:", error?.message);
+console.log("ERRORS:", error?.errors);
+console.log("STACK:", error?.stack);
+console.log("======================================");
     }
   }
 );
