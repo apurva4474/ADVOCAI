@@ -226,7 +226,7 @@ const askCaseQuestion =
 
       const res =
         await fetch(
-          API.chat,
+          API.caseChat,
           {
             method: "POST",
 
