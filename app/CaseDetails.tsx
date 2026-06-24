@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 
 import {
   ActivityIndicator,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -47,7 +49,21 @@ export default function CaseDetails() {
   const [translations,
   setTranslations] =
   useState<any[]>([]);
+    const [chatVisible,
+  setChatVisible] =
+  useState(false);
 
+const [question,
+  setQuestion] =
+  useState("");
+
+const [answer,
+  setAnswer] =
+  useState("");
+
+const [chatLoading,
+  setChatLoading] =
+  useState(false);
   /* ---------------- FETCH DATA ---------------- */
 
   const fetchData = async () => {
@@ -197,7 +213,63 @@ if (translationRes.ok) {
     fetchData();
 
   }, []);
+const askCaseQuestion =
+  async () => {
 
+    try {
+
+      setChatLoading(true);
+
+      const token =
+        await getToken();
+
+      const res =
+        await fetch(
+          API.chat,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`,
+            },
+
+            body:
+              JSON.stringify({
+                caseId,
+                question,
+              }),
+          }
+        );
+
+      const data =
+        await res.json();
+
+      if (res.ok) {
+
+        setAnswer(
+          data.answer
+        );
+
+      } else {
+
+        alert(
+          data.error
+        );
+      }
+
+    } catch (error) {
+
+      console.log(error);
+
+    } finally {
+
+      setChatLoading(false);
+    }
+  };
   /* ---------------- GENERATE ARGUMENTS ---------------- */
 
   const generateArguments =
@@ -668,6 +740,7 @@ if (translationRes.ok) {
 
         </View>
       )
+
     )
 
   ) : (
@@ -679,9 +752,61 @@ if (translationRes.ok) {
   )}
 
 </View>
+<Modal
+  visible={chatVisible}
+  animationType="slide"
+>
+  <View style={styles.modal}>
+
+    <Text style={styles.modalTitle}>
+      🤖 ADVOCAI Assistant
+    </Text>
+
+    <TextInput
+      placeholder="Ask about this case..."
+      placeholderTextColor="#999"
+      value={question}
+      onChangeText={setQuestion}
+      style={styles.input}
+    />
+
+    <TouchableOpacity
+      style={styles.askBtn}
+      onPress={
+        askCaseQuestion
+      }
+    >
+      <Text>
+        {chatLoading
+          ? "Thinking..."
+          : "Ask"}
+      </Text>
+    </TouchableOpacity>
+
+    <ScrollView>
+      <Text
+        style={styles.answer}
+      >
+        {answer}
+      </Text>
+    </ScrollView>
+
+    <TouchableOpacity
+      onPress={() =>
+        setChatVisible(false)
+      }
+    >
+      <Text>
+        Close
+      </Text>
+    </TouchableOpacity>
+
+  </View>
+</Modal>
     </ScrollView>
     
   );
+
 }
 
 const styles = StyleSheet.create({
@@ -807,4 +932,51 @@ const styles = StyleSheet.create({
     color: "#CBD5E1",
     lineHeight: 24,
   },
+  chatFab: {
+  position: "absolute",
+  bottom: 25,
+  right: 20,
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: "#2563EB",
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 8,
+},
+
+modal: {
+  flex: 1,
+  backgroundColor: "#0F172A",
+  padding: 20,
+},
+
+modalTitle: {
+  color: "#fff",
+  fontSize: 22,
+  fontWeight: "700",
+  marginBottom: 10,
+},
+
+input: {
+  backgroundColor: "#1E293B",
+  color: "#fff",
+  padding: 15,
+  borderRadius: 12,
+  marginTop: 20,
+},
+
+askBtn: {
+  backgroundColor: "#2563EB",
+  padding: 15,
+  borderRadius: 12,
+  marginTop: 12,
+  alignItems: "center",
+},
+
+answer: {
+  color: "#fff",
+  marginTop: 20,
+  lineHeight: 24,
+},
 });

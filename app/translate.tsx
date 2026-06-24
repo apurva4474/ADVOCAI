@@ -22,6 +22,7 @@ export default function TranslateScreen() {
     : null;
     const caseId =
   params.caseId as string;
+  console.log("PARAMS:", params);
 const [translatedSummary, setTranslatedSummary] =
   useState<any>(null);
 const handleTranslate = async () => {
@@ -34,7 +35,9 @@ const handleTranslate = async () => {
     const token = await getToken();
 
     console.log("STEP 2");
-
+    console.log("TRANSLATE URL:", API.translate);
+console.log("CASE ID:", caseId);
+console.log("LANGUAGE:", language);
     const response = await fetch(
       API.translate,
       {
@@ -49,6 +52,8 @@ const handleTranslate = async () => {
           language,
         }),
       }
+      
+
     );
 
     console.log("STEP 3");

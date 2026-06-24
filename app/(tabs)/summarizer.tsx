@@ -45,10 +45,9 @@ const pickFile = async () => {
   }
 };
 
-  // ✨ Summarize
+
   const handleSummarize = async () => {
 
-    // ✅ TEXT MODE FIXED
     if (mode === "text") {
 
       if (!text) {
@@ -168,6 +167,10 @@ if (mode === "file") {
     if (res.ok) {
 
       setSummary(data.summary);
+      if (data.caseId) {
+        setCaseId(data.caseId);
+      console.log("PDF CASE ID:", data.caseId);
+      }
 
     } else {
 
@@ -189,6 +192,7 @@ if (mode === "file") {
   } finally {
 
     setLoading(false);
+    
   }
 }
   };
@@ -325,6 +329,7 @@ if (mode === "file") {
   <TouchableOpacity
     style={styles.translateButton}
     onPress={() =>
+      
       router.push({
         pathname: "/translate",
         params: {
@@ -333,6 +338,7 @@ if (mode === "file") {
         },
       })
     }
+    
   >
     <Text style={styles.translateButtonText}>
       🌐 Translate Summary
